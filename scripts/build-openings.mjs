@@ -1,9 +1,15 @@
 // Regenerate src/data/openings.json from the vendored lichess/chess-openings TSVs.
 // Usage: node scripts/build-openings.mjs
 import { readFileSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
 import { Chess } from "chess.js";
 
-const FILES = ["a", "b", "c", "d", "e"].map((x) => `vendor/chess-openings/${x}.tsv`);
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+const FILES = ["a", "b", "c", "d", "e"].map((x) =>
+  path.join(ROOT, "vendor/chess-openings", `${x}.tsv`),
+);
 
 const entries = [];
 for (const file of FILES) {
@@ -41,7 +47,12 @@ for (const { name, pgn } of entries) {
   }
 }
 
-writeFileSync("src/data/openings.json", JSON.stringify(map));
+if (skipped > 5) {
+  console.error(`build:openings: ${skipped} lines skipped — investigate before committing`);
+  process.exit(1);
+}
+
+writeFileSync(path.join(ROOT, "src/data/openings.json"), JSON.stringify(map));
 console.log(
   `openings: ${entries.length} lines (${skipped} skipped) -> ${Object.keys(map).length} positions`,
 );
