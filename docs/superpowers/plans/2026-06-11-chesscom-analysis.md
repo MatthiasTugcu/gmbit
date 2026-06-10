@@ -160,7 +160,7 @@ console.log(
 In `package.json` scripts add: `"build:openings": "node scripts/build-openings.mjs"`.
 
 Run: `npm run build:openings`
-Expected: prints roughly `openings: ~3500 lines (0 skipped) -> ~10000-16000 positions` and `src/data/openings.json` exists. If more than a handful of lines are skipped, stop and investigate the PGN parsing.
+Expected: prints roughly `openings: ~3700 lines (0 skipped) -> ~7000-8000 positions` and `src/data/openings.json` exists. If more than a handful of lines are skipped, stop and investigate the PGN parsing.
 
 - [ ] **Step 4: Sanity-check known positions**
 
