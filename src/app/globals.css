@@ -1,26 +1,165 @@
 @import "tailwindcss";
 
+/* ============================================================
+   Design tokens — two-axis theming:
+   1) .mode-dark / .mode-light  -> app chrome
+   2) [data-board="..."]        -> board squares
+   ============================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --accent-h: 295;
+  --accent: oklch(0.64 0.19 var(--accent-h));
+  --accent-bright: oklch(0.72 0.20 var(--accent-h));
+  --accent-soft: oklch(0.64 0.19 var(--accent-h) / 0.16);
+  --accent-line: oklch(0.64 0.19 var(--accent-h) / 0.40);
+
+  --c-brilliant: oklch(0.78 0.13 195);   /* turquoise */
+  --c-best:      oklch(0.74 0.16 152);   /* green */
+  --c-good:      oklch(0.78 0.14 145);   /* green (slightly lighter) */
+  --c-book:      oklch(0.52 0.07 55);    /* brown */
+  --c-inaccuracy:oklch(0.82 0.14 92);
+  --c-mistake:   oklch(0.73 0.16 56);
+  --c-blunder:   oklch(0.64 0.21 27);
+
+  --r-sm: 7px;
+  --r-md: 11px;
+  --r-lg: 16px;
+
+  --mono: var(--font-geist-mono), "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --sans: var(--font-sans), "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  /* Default to the dark token set so the page paints dark before React hydrates
+     (and so callers that don't set .mode-* still get a sensible theme). */
+  --bg:    oklch(0.165 0.018 288);
+  --bg-1:  oklch(0.195 0.022 288);
+  --bg-2:  oklch(0.225 0.026 288);
+  --bg-3:  oklch(0.265 0.030 288);
+  --line:  oklch(0.32 0.028 288);
+  --line-2:oklch(0.40 0.030 288);
+  --text:  oklch(0.96 0.008 288);
+  --text-2:oklch(0.74 0.018 288);
+  --text-3:oklch(0.56 0.020 288);
+  --shadow: 0 18px 50px -20px rgb(0 0 0 / 0.7);
+  --glow: 0 0 0 1px var(--accent-line), 0 10px 40px -8px oklch(0.64 0.19 var(--accent-h) / 0.35);
+  color-scheme: dark;
+}
+
+.mode-dark {
+  --bg:    oklch(0.165 0.018 288);
+  --bg-1:  oklch(0.195 0.022 288);
+  --bg-2:  oklch(0.225 0.026 288);
+  --bg-3:  oklch(0.265 0.030 288);
+  --line:  oklch(0.32 0.028 288);
+  --line-2:oklch(0.40 0.030 288);
+  --text:  oklch(0.96 0.008 288);
+  --text-2:oklch(0.74 0.018 288);
+  --text-3:oklch(0.56 0.020 288);
+  --shadow: 0 18px 50px -20px rgb(0 0 0 / 0.7);
+  --glow: 0 0 0 1px var(--accent-line), 0 10px 40px -8px oklch(0.64 0.19 var(--accent-h) / 0.35);
+  color-scheme: dark;
+}
+
+.mode-light {
+  --bg:    oklch(0.975 0.005 288);
+  --bg-1:  oklch(1 0 0);
+  --bg-2:  oklch(0.985 0.006 288);
+  --bg-3:  oklch(0.955 0.010 288);
+  --line:  oklch(0.90 0.012 288);
+  --line-2:oklch(0.83 0.016 288);
+  --text:  oklch(0.24 0.024 288);
+  --text-2:oklch(0.46 0.022 288);
+  --text-3:oklch(0.62 0.020 288);
+  --accent: oklch(0.56 0.20 var(--accent-h));
+  --accent-bright: oklch(0.62 0.21 var(--accent-h));
+  --shadow: 0 14px 40px -22px rgb(0 0 0 / 0.30);
+  --glow: 0 0 0 1px var(--accent-line), 0 10px 36px -10px oklch(0.56 0.20 var(--accent-h) / 0.28);
+  color-scheme: light;
+}
+
+[data-board="violet"] {
+  --sq-light: oklch(0.36 0.030 292);
+  --sq-dark: oklch(0.255 0.034 292);
+  --hl: oklch(0.64 0.19 295 / 0.45);
+  --hl2: oklch(0.70 0.18 295 / 0.55);
+  --dot: oklch(0.80 0.05 295 / 0.45);
+  --coord: oklch(0.78 0.04 292 / .65);
+}
+[data-board="slate"] {
+  --sq-light: oklch(0.66 0.012 250);
+  --sq-dark: oklch(0.45 0.016 250);
+  --hl: oklch(0.64 0.19 295 / 0.42);
+  --hl2: oklch(0.70 0.18 295 / 0.52);
+  --dot: oklch(0.25 0.02 250 / 0.40);
+  --coord: oklch(0.30 0.02 250 / .7);
+}
+[data-board="green"] {
+  --sq-light: oklch(0.90 0.045 110);
+  --sq-dark: oklch(0.54 0.075 148);
+  --hl: oklch(0.82 0.16 95 / 0.55);
+  --hl2: oklch(0.86 0.16 95 / 0.6);
+  --dot: oklch(0.30 0.04 145 / 0.38);
+  --coord: oklch(0.34 0.05 145 / .7);
+}
+[data-board="walnut"] {
+  --sq-light: oklch(0.76 0.060 70);
+  --sq-dark: oklch(0.46 0.070 52);
+  --hl: oklch(0.78 0.15 80 / 0.5);
+  --hl2: oklch(0.83 0.15 80 / 0.58);
+  --dot: oklch(0.30 0.05 55 / 0.40);
+  --coord: oklch(0.34 0.05 55 / .72);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-app: var(--bg);
+  --color-bg-1: var(--bg-1);
+  --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-accent: var(--accent);
+  --color-accent-bright: var(--accent-bright);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+
+  --color-c-brilliant: var(--c-brilliant);
+  --color-c-best: var(--c-best);
+  --color-c-good: var(--c-good);
+  --color-c-book: var(--c-book);
+  --color-c-inaccuracy: var(--c-inaccuracy);
+  --color-c-mistake: var(--c-mistake);
+  --color-c-blunder: var(--c-blunder);
+
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+
+  --font-mono: var(--mono);
+  --font-sans: var(--sans);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); }
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+}
+button { font-family: inherit; cursor: pointer; }
+::selection { background: var(--accent-soft); }
+
+.mode-dark .app-root::before {
+  content: "";
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(1200px 700px at 18% -10%, oklch(0.64 0.19 var(--accent-h) / 0.10), transparent 60%),
+    radial-gradient(900px 600px at 110% 120%, oklch(0.64 0.19 var(--accent-h) / 0.07), transparent 55%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .piece, .evalbar-fill { transition: none !important; }
 }
