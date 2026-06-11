@@ -40,7 +40,7 @@ export interface GameAnalysisResult {
 }
 
 /** Convert a side-to-move engine result into a white-positive PositionEval. */
-function toPositionEval(fen: string, info: AnalysisInfo): PositionEval {
+export function toPositionEval(fen: string, info: AnalysisInfo): PositionEval {
   const sign = fen.split(" ")[1] === "b" ? -1 : 1;
   const raw =
     info.lines && info.lines.length > 0
@@ -50,7 +50,11 @@ function toPositionEval(fen: string, info: AnalysisInfo): PositionEval {
     lines: raw.map((l) => ({
       score: {
         cp: l.cp !== undefined ? l.cp * sign : undefined,
-        mate: l.mate !== undefined ? l.mate * sign : undefined,
+        // `mate 0` means the side to move is already checkmated — the mover
+        // who delivered it is winning, so flip to a mate FOR the other side
+        // (sign-flipping 0 alone would yield -0 and read as a 0% winrate,
+        // turning every game-ending mating move into a "blunder").
+        mate: l.mate !== undefined ? (l.mate === 0 ? -sign : l.mate * sign) : undefined,
       },
       uci: l.pv[0],
     })),
