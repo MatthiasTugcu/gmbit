@@ -115,7 +115,8 @@ export function createEngine(): Engine {
           current.lines.set(info.multipv, { cp: info.cp, mate: info.mate, pv: info.pv });
         }
         // Only line 1 drives the top-level snapshot and progress callbacks,
-        // so MultiPV >= 2 stays invisible to single-line consumers.
+        // so MultiPV >= 2 stays invisible to single-line consumers (and a
+        // line-2 packet can't overwrite `latest`, which must track line 1).
         if (info.multipv === 1) {
           current.latest = info;
           current.opts.onProgress?.(info);
@@ -131,6 +132,8 @@ export function createEngine(): Engine {
         finished.opts.signal?.removeEventListener("abort", finished.abortHandler);
       }
       const bestmove = line.split(/\s+/)[1];
+      // Mutating `final` is safe: `current` is already null, so no further
+      // info lines can touch `finished.latest` before we resolve.
       const final = finished.latest ?? { depth: 0, multipv: 1, pv: [] };
       // Stockfish's last `info` line may lack a PV (currmove probes etc.).
       // The `bestmove` line is authoritative, so seed pv[0] from it.
@@ -204,6 +207,8 @@ export function createEngine(): Engine {
           opts.signal.addEventListener("abort", pending.abortHandler, { once: true });
         }
 
+        // Send setoption only on change: UCI forbids option changes during a
+        // running search, and the engine remembers options across ucinewgame.
         const multiPv = opts.multiPv ?? 1;
         if (multiPv !== lastMultiPv) {
           send(`setoption name MultiPV value ${multiPv}`);
