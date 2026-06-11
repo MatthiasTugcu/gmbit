@@ -91,6 +91,8 @@ const round1 = (x: number) => Math.round(x * 10) / 10;
  * Lichess game-accuracy method: mean of (a) win%-volatility-weighted mean and
  * (b) harmonic mean of per-move accuracies, per color, book moves excluded.
  * `whiteWinrates` has one entry per position (moves.length + 1).
+ * Zero accuracies are floored to 0.1 in the harmonic mean to avoid division
+ * by zero, slightly inflating the harmonic component for 0%-accuracy moves.
  */
 export function gameAccuracy(
   moves: MoveAccEntry[],
@@ -98,11 +100,13 @@ export function gameAccuracy(
 ): { white: number; black: number } {
   const windowSize = Math.max(2, Math.min(8, Math.ceil(moves.length / 10)));
 
-  // Volatility weight for move i: std-dev of the win% window around it.
+  // Volatility weight for move i: std-dev of the win% values spanning
+  // positions [i+1-windowSize .. i+1] — windowSize+1 entries at steady state,
+  // covering the positions before and after the move.
   const weights = moves.map((_, i) => {
     const start = Math.max(0, i + 1 - windowSize);
-    const window = whiteWinrates.slice(start, i + 2);
-    return Math.max(0.5, Math.min(12, stdDev(window)));
+    const winSlice = whiteWinrates.slice(start, i + 2);
+    return Math.max(0.5, Math.min(12, stdDev(winSlice)));
   });
 
   const perColor = (color: Color): number => {
