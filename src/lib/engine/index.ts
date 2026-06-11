@@ -10,15 +10,28 @@
  * Swapping this to a server endpoint later means changing only this file.
  */
 
-export interface AnalysisInfo {
-  /** Depth of this report. */
-  depth: number;
+export interface EngineLine {
   /** Centipawn evaluation from the side-to-move's perspective. */
   cp?: number;
   /** Mate in N (positive = side to move mates, negative = gets mated). */
   mate?: number;
-  /** Principal variation, as UCI move strings (e.g. "e2e4"). */
+  /** Principal variation, as UCI move strings. */
   pv: string[];
+}
+
+export interface AnalysisInfo {
+  /** Depth of this report. */
+  depth: number;
+  /** Which MultiPV slot this info line belongs to (1 = best). */
+  multipv: number;
+  /** Centipawn evaluation from the side-to-move's perspective (line 1). */
+  cp?: number;
+  /** Mate in N (positive = side to move mates, negative = gets mated). */
+  mate?: number;
+  /** Principal variation of line 1, as UCI move strings (e.g. "e2e4"). */
+  pv: string[];
+  /** All requested lines, index 0 = best. Present on the final result. */
+  lines?: EngineLine[];
   /** Nodes per second, when reported. */
   nps?: number;
 }
@@ -28,7 +41,9 @@ export interface AnalyzeOptions {
   depth?: number;
   /** Max think time in milliseconds. If both depth and movetime are set, both apply. */
   movetime?: number;
-  /** Called for each intermediate `info` line. */
+  /** Number of engine lines to search (UCI MultiPV). Default 1. */
+  multiPv?: number;
+  /** Called for each intermediate `info` line (line 1 only). */
   onProgress?: (info: AnalysisInfo) => void;
   /** Abort signal — calling abort() cancels the analysis. */
   signal?: AbortSignal;
@@ -53,12 +68,15 @@ type Pending = {
   resolve: (info: AnalysisInfo) => void;
   reject: (err: unknown) => void;
   latest: AnalysisInfo | null;
+  /** Latest line per MultiPV slot (key = multipv index). */
+  lines: Map<number, EngineLine>;
   abortHandler?: () => void;
 };
 
 export function createEngine(): Engine {
   const worker = new Worker(STOCKFISH_URL);
   let current: Pending | null = null;
+  let lastMultiPv = 1;
 
   let resolveReady: () => void = () => {};
   let readyPromise: Promise<void> = new Promise((r) => {
@@ -93,8 +111,15 @@ export function createEngine(): Engine {
     if (current && line.startsWith("info ")) {
       const info = parseInfoLine(line);
       if (info) {
-        current.latest = info;
-        current.opts.onProgress?.(info);
+        if (info.pv.length > 0) {
+          current.lines.set(info.multipv, { cp: info.cp, mate: info.mate, pv: info.pv });
+        }
+        // Only line 1 drives the top-level snapshot and progress callbacks,
+        // so MultiPV >= 2 stays invisible to single-line consumers.
+        if (info.multipv === 1) {
+          current.latest = info;
+          current.opts.onProgress?.(info);
+        }
       }
       return;
     }
@@ -106,11 +131,16 @@ export function createEngine(): Engine {
         finished.opts.signal?.removeEventListener("abort", finished.abortHandler);
       }
       const bestmove = line.split(/\s+/)[1];
-      const final = finished.latest ?? { depth: 0, pv: [] };
+      const final = finished.latest ?? { depth: 0, multipv: 1, pv: [] };
       // Stockfish's last `info` line may lack a PV (currmove probes etc.).
       // The `bestmove` line is authoritative, so seed pv[0] from it.
       if (bestmove && bestmove !== "(none)" && (final.pv.length === 0 || final.pv[0] !== bestmove)) {
         final.pv = [bestmove, ...final.pv.slice(1)];
+      }
+      const ordered = [...finished.lines.entries()].sort((a, b) => a[0] - b[0]).map(([, l]) => l);
+      if (ordered.length > 0) {
+        ordered[0] = { ...ordered[0], pv: final.pv.length > 0 ? final.pv : ordered[0].pv };
+        final.lines = ordered;
       }
       finished.resolve(final);
     }
@@ -157,7 +187,7 @@ export function createEngine(): Engine {
       }
 
       return new Promise<AnalysisInfo>((resolve, reject) => {
-        const pending: Pending = { fen, opts, resolve, reject, latest: null };
+        const pending: Pending = { fen, opts, resolve, reject, latest: null, lines: new Map() };
         current = pending;
 
         if (opts.signal) {
@@ -174,6 +204,11 @@ export function createEngine(): Engine {
           opts.signal.addEventListener("abort", pending.abortHandler, { once: true });
         }
 
+        const multiPv = opts.multiPv ?? 1;
+        if (multiPv !== lastMultiPv) {
+          send(`setoption name MultiPV value ${multiPv}`);
+          lastMultiPv = multiPv;
+        }
         send("ucinewgame");
         send(`position fen ${fen}`);
         const parts: string[] = ["go"];
@@ -206,9 +241,10 @@ export function createEngine(): Engine {
  * Parse a UCI `info` line into a structured snapshot. Returns null when the
  * line lacks the fields we care about (e.g. `info string ...`).
  */
-function parseInfoLine(line: string): AnalysisInfo | null {
+export function parseInfoLine(line: string): AnalysisInfo | null {
   const tokens = line.split(/\s+/);
   let depth: number | undefined;
+  let multipv: number | undefined;
   let cp: number | undefined;
   let mate: number | undefined;
   let nps: number | undefined;
@@ -219,6 +255,9 @@ function parseInfoLine(line: string): AnalysisInfo | null {
     switch (tok) {
       case "depth":
         depth = Number(tokens[++i]);
+        break;
+      case "multipv":
+        multipv = Number(tokens[++i]);
         break;
       case "nps":
         nps = Number(tokens[++i]);
@@ -240,5 +279,5 @@ function parseInfoLine(line: string): AnalysisInfo | null {
   }
 
   if (depth === undefined && cp === undefined && mate === undefined) return null;
-  return { depth: depth ?? 0, cp, mate, pv, nps };
+  return { depth: depth ?? 0, multipv: multipv ?? 1, cp, mate, pv, nps };
 }
