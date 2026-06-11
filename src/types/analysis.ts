@@ -1,10 +1,13 @@
 export type MoveClass =
   | "brilliant"
+  | "great"
   | "best"
+  | "excellent"
   | "good"
   | "book"
   | "inaccuracy"
   | "mistake"
+  | "miss"
   | "blunder";
 
 export type Color = "w" | "b";
@@ -17,6 +20,8 @@ export interface Move {
   san: string;
   from: Square;
   to: Square;
+  /** Promotion piece in UCI form (e.g. "q"), when the move promotes. */
+  promo?: string;
   cls: MoveClass;
   cp?: number;
   mate?: number;

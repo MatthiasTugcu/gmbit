@@ -55,6 +55,7 @@ export function parsePgn(pgn: string): AnalysisGame {
       san: h.san,
       from: h.from,
       to: h.to,
+      promo: h.promotion,
       cls: "good",
       cap: h.isCapture(),
       check: isCheck || isMate,
