@@ -21,21 +21,38 @@ const Book = (
   </svg>
 );
 
+const Star = (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2l-6.1 3.4 1.4-6.8L2.2 9.1l6.9-.8L12 2z" />
+  </svg>
+);
+
+const Cross = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round">
+    <path d="M6 6l12 12M18 6L6 18" />
+  </svg>
+);
+
 export const CLS: Record<
   MoveClass,
   { label: string; sym: string; short: string; icon?: JSX.Element }
 > = {
   brilliant:  { label: "Brilliant",  sym: "!!",        short: "!!" },
+  great:      { label: "Great",      sym: "!",         short: "!",      icon: Star },
   best:       { label: "Best move",  sym: "\u2713",    short: "\u2713", icon: Crown },
-  good:       { label: "Good",       sym: "\u2713",    short: "\u2713", icon: Check },
+  excellent:  { label: "Excellent",  sym: "\u2713",    short: "\u2713", icon: Check },
+  good:       { label: "Good",       sym: "\u2713",    short: "\u2713" },
   book:       { label: "Book",       sym: "\u25CF",    short: "",       icon: Book },
   inaccuracy: { label: "Inaccuracy", sym: "?!",        short: "?!" },
   mistake:    { label: "Mistake",    sym: "?",         short: "?" },
+  miss:       { label: "Miss",       sym: "\u2715",    short: "\u2715", icon: Cross },
   blunder:    { label: "Blunder",    sym: "??",        short: "??" },
 };
 
 export const GRAPH_MARK: Set<MoveClass> = new Set([
   "brilliant",
+  "great",
+  "miss",
   "inaccuracy",
   "mistake",
   "blunder",

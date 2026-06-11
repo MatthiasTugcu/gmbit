@@ -14,9 +14,12 @@
   --accent-line: oklch(0.64 0.19 var(--accent-h) / 0.40);
 
   --c-brilliant: oklch(0.78 0.13 195);   /* turquoise */
+  --c-great:     oklch(0.70 0.14 230);   /* blue */
   --c-best:      oklch(0.74 0.16 152);   /* green */
-  --c-good:      oklch(0.78 0.14 145);   /* green (slightly lighter) */
+  --c-excellent: oklch(0.76 0.15 148);   /* green, just under best */
+  --c-good:      oklch(0.75 0.08 145);   /* muted green */
   --c-book:      oklch(0.52 0.07 55);    /* brown */
+  --c-miss:      oklch(0.70 0.17 40);    /* salmon red-orange */
   --c-inaccuracy:oklch(0.82 0.14 92);
   --c-mistake:   oklch(0.73 0.16 56);
   --c-blunder:   oklch(0.64 0.21 27);
@@ -125,11 +128,14 @@
   --color-accent-line: var(--accent-line);
 
   --color-c-brilliant: var(--c-brilliant);
+  --color-c-great: var(--c-great);
   --color-c-best: var(--c-best);
+  --color-c-excellent: var(--c-excellent);
   --color-c-good: var(--c-good);
   --color-c-book: var(--c-book);
   --color-c-inaccuracy: var(--c-inaccuracy);
   --color-c-mistake: var(--c-mistake);
+  --color-c-miss: var(--c-miss);
   --color-c-blunder: var(--c-blunder);
 
   --radius-sm: var(--r-sm);

@@ -8,11 +8,14 @@ interface Props {
 
 const LEGEND_ORDER: MoveClass[] = [
   "brilliant",
+  "great",
   "best",
+  "excellent",
   "good",
   "book",
   "inaccuracy",
   "mistake",
+  "miss",
   "blunder",
 ];
 
