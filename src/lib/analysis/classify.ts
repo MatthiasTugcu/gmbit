@@ -71,6 +71,58 @@ const GREAT_GAP = 12; // win% gap to 2nd line that makes a best move "the only m
 const MISS_BEFORE = 75; // win% that counts as a decisive chance
 const MISS_AFTER = 60; // dropping below this throws the chance away
 
+export interface MoveAccEntry {
+  color: Color;
+  /** Per-move accuracy 0..100 (from moveAccuracy). */
+  acc: number;
+  /** Book moves are excluded from accuracy. */
+  isBook: boolean;
+}
+
+function stdDev(xs: number[]): number {
+  if (xs.length === 0) return 0;
+  const mean = xs.reduce((a, b) => a + b, 0) / xs.length;
+  return Math.sqrt(xs.reduce((a, b) => a + (b - mean) ** 2, 0) / xs.length);
+}
+
+const round1 = (x: number) => Math.round(x * 10) / 10;
+
+/**
+ * Lichess game-accuracy method: mean of (a) win%-volatility-weighted mean and
+ * (b) harmonic mean of per-move accuracies, per color, book moves excluded.
+ * `whiteWinrates` has one entry per position (moves.length + 1).
+ */
+export function gameAccuracy(
+  moves: MoveAccEntry[],
+  whiteWinrates: number[],
+): { white: number; black: number } {
+  const windowSize = Math.max(2, Math.min(8, Math.ceil(moves.length / 10)));
+
+  // Volatility weight for move i: std-dev of the win% window around it.
+  const weights = moves.map((_, i) => {
+    const start = Math.max(0, i + 1 - windowSize);
+    const window = whiteWinrates.slice(start, i + 2);
+    return Math.max(0.5, Math.min(12, stdDev(window)));
+  });
+
+  const perColor = (color: Color): number => {
+    const accs: number[] = [];
+    const ws: number[] = [];
+    moves.forEach((m, i) => {
+      if (m.color !== color || m.isBook) return;
+      accs.push(m.acc);
+      ws.push(weights[i]);
+    });
+    if (accs.length === 0) return 0;
+    const weighted =
+      accs.reduce((sum, a, i) => sum + a * ws[i], 0) / ws.reduce((a, b) => a + b, 0);
+    const harmonic = accs.length / accs.reduce((sum, a) => sum + 1 / Math.max(a, 0.1), 0);
+    return round1((weighted + harmonic) / 2);
+  };
+
+  return { white: perColor("w"), black: perColor("b") };
+}
+
 export function classifyMove(a: ClassifyArgs): MoveClass {
   if (a.isBook) return "book";
   if (a.before.lines.length === 0) return "good"; // degenerate: no engine data

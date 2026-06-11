@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   classifyMove,
+  gameAccuracy,
   moveAccuracy,
   moverScore,
   moverWinrate,
   whiteWinrate,
   type ClassifyArgs,
+  type MoveAccEntry,
 } from "./classify";
 
 describe("whiteWinrate", () => {
@@ -268,5 +270,46 @@ describe("classifyMove ladder", () => {
         }),
       ),
     ).toBe("blunder");
+  });
+});
+
+function entries(pattern: [color: "w" | "b", acc: number, isBook?: boolean][]): MoveAccEntry[] {
+  return pattern.map(([color, acc, isBook]) => ({ color, acc, isBook: isBook ?? false }));
+}
+
+describe("gameAccuracy", () => {
+  it("perfect play is 100 for both sides", () => {
+    const e = entries([["w", 100], ["b", 100], ["w", 100], ["b", 100]]);
+    const flat = [50, 50, 50, 50, 50];
+    expect(gameAccuracy(e, flat)).toEqual({ white: 100, black: 100 });
+  });
+
+  it("book moves are excluded entirely", () => {
+    // White: two book moves (acc irrelevant) + one 80-acc move -> only the 80 counts.
+    const e = entries([["w", 0, true], ["b", 100], ["w", 0, true], ["b", 100], ["w", 80]]);
+    const flat = [50, 50, 50, 50, 50, 50];
+    expect(gameAccuracy(e, flat).white).toBe(80);
+  });
+
+  it("harmonic mean drags the score toward blunders more than a plain average", () => {
+    const e = entries([["w", 100], ["w", 100], ["w", 100], ["w", 20]]);
+    const flat = [50, 50, 50, 50, 50];
+    const { white } = gameAccuracy(e, flat);
+    expect(white).toBeLessThan(80); // plain average
+    expect(white).toBeGreaterThan(20);
+  });
+
+  it("returns 0 for a side with no countable moves", () => {
+    const e = entries([["w", 100]]);
+    expect(gameAccuracy(e, [50, 50]).black).toBe(0);
+  });
+
+  it("weights volatile phases more", () => {
+    // Same per-move accuracies; the 60-acc move sits in a volatile window for
+    // `swingy` and a calm window for `calm` -> swingy scores lower for white.
+    const e = entries([["w", 100], ["b", 100], ["w", 60], ["b", 100], ["w", 100], ["b", 100]]);
+    const calm = [50, 50, 50, 50, 50, 50, 50];
+    const swingy = [50, 50, 90, 30, 50, 50, 50];
+    expect(gameAccuracy(e, swingy).white).toBeLessThan(gameAccuracy(e, calm).white);
   });
 });
