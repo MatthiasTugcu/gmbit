@@ -9,6 +9,7 @@ import {
   moveAccuracy,
   moverWinrate,
   whiteWinrate,
+  type MoveAccEntry,
   type PositionEval,
   type Score,
 } from "@/lib/analysis/classify";
@@ -72,7 +73,7 @@ function annotate(
   book: BookInfo,
 ): Annotated {
   const moves = game.moves.slice();
-  const accEntries: { color: "w" | "b"; acc: number; isBook: boolean }[] = [];
+  const accEntries: MoveAccEntry[] = [];
   const winrates: number[] = [];
   if (positions[0]) winrates.push(whiteWinrate(positions[0].lines[0].score));
 
@@ -156,6 +157,9 @@ export function useGameAnalysis(game: AnalysisGame): GameAnalysisResult {
   const [progress, setProgress] = useState({ done: 0, total: game.moves.length });
 
   useEffect(() => {
+    // Reset-on-game-change: React batches these into one render; the linter's
+    // set-state-in-effect rule false-positives on this standard pattern.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAnnotated(game);
     setAccuracy({ white: 0, black: 0 });
     setOpeningName(null);
@@ -218,8 +222,9 @@ export function useGameAnalysis(game: AnalysisGame): GameAnalysisResult {
           apply();
           setProgress((p) => ({ ...p, done: game.moves.length + t + 1 }));
         }
-      } catch {
-        // Aborts / teardown land here — partial annotation stays visible.
+      } catch (err) {
+        // Aborts / teardown land here — stay silent for those; surface real bugs.
+        if (!cancelled) console.error("game analysis failed:", err);
       }
     })();
 
