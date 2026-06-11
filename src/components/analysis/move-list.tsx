@@ -41,7 +41,7 @@ function PlyCell({
       {hasIcon && (
         <span
           className="ml-auto grid h-[17px] w-[17px] place-items-center rounded-full text-white shrink-0"
-          style={{ background: `var(--c-${m.cls})` }}
+          style={{ background: `var(--c-${m.cls})`, color: meta.ink ?? "white" }}
         >
           <span className="grid h-[10px] w-[10px] place-items-center">
             {meta.icon}
@@ -53,7 +53,7 @@ function PlyCell({
           className="ml-auto grid h-[17px] w-[17px] place-items-center rounded-full text-[12px] font-extrabold leading-none text-white shrink-0"
           style={{
             background: `var(--c-${m.cls})`,
-            color: m.cls === "inaccuracy" ? "oklch(0.28 0.05 92)" : "white",
+            color: meta.ink ?? "white",
           }}
         >
           <span className="inline-flex">

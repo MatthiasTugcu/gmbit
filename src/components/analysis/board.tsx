@@ -162,6 +162,7 @@ export function Board({
             width: badge.sq,
             height: badge.sq,
             background: `var(--c-${badge.cls})`,
+            color: CLS[badge.cls].ink ?? "white",
             fontSize: Math.round(badge.sq * 0.46),
           }}
         >

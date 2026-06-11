@@ -30,7 +30,6 @@ export function ClassBar({ move, showLegend }: Props) {
     );
   }
   const meta = CLS[move.cls];
-  const isInaccuracy = move.cls === "inaccuracy";
   return (
     <div className="px-[15px] py-[14px]">
       <div className="flex items-center gap-3">
@@ -38,7 +37,7 @@ export function ClassBar({ move, showLegend }: Props) {
           className="grid h-[38px] w-[38px] place-items-center rounded-full text-[17px] font-bold leading-none text-white shrink-0"
           style={{
             background: `var(--c-${move.cls})`,
-            color: isInaccuracy ? "oklch(0.28 0.05 92)" : "white",
+            color: meta.ink ?? "white",
           }}
         >
           {meta.icon ? (

@@ -33,17 +33,22 @@ const Cross = (
   </svg>
 );
 
+/** Dark badge text for the light green backgrounds (white fails contrast). */
+const INK_GREEN = "oklch(0.27 0.06 148)";
+/** Dark badge text for the light yellow inaccuracy background. */
+const INK_YELLOW = "oklch(0.28 0.05 92)";
+
 export const CLS: Record<
   MoveClass,
-  { label: string; sym: string; short: string; icon?: JSX.Element }
+  { label: string; sym: string; short: string; icon?: JSX.Element; ink?: string }
 > = {
   brilliant:  { label: "Brilliant",  sym: "!!",        short: "!!" },
   great:      { label: "Great",      sym: "!",         short: "!",      icon: Star },
   best:       { label: "Best move",  sym: "\u2713",    short: "\u2713", icon: Crown },
-  excellent:  { label: "Excellent",  sym: "\u2713",    short: "\u2713", icon: Check },
-  good:       { label: "Good",       sym: "\u2713",    short: "\u2713" },
+  excellent:  { label: "Excellent",  sym: "\u2713",    short: "\u2713", icon: Check, ink: INK_GREEN },
+  good:       { label: "Good",       sym: "\u2713",    short: "\u2713", ink: INK_GREEN },
   book:       { label: "Book",       sym: "\u25CF",    short: "",       icon: Book },
-  inaccuracy: { label: "Inaccuracy", sym: "?!",        short: "?!" },
+  inaccuracy: { label: "Inaccuracy", sym: "?!",        short: "?!",     ink: INK_YELLOW },
   mistake:    { label: "Mistake",    sym: "?",         short: "?" },
   miss:       { label: "Miss",       sym: "\u2715",    short: "\u2715", icon: Cross },
   blunder:    { label: "Blunder",    sym: "??",        short: "??" },
