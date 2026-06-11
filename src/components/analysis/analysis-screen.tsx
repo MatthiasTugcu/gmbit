@@ -54,6 +54,7 @@ export function AnalysisScreen({ initialGame }: Props) {
     game: analyzedGame,
     whiteAccuracy,
     blackAccuracy,
+    openingName,
     progress: analysisProgress,
   } = useGameAnalysis(game);
   const total = analyzedGame.moves.length;
@@ -69,8 +70,9 @@ export function AnalysisScreen({ initialGame }: Props) {
       ...base,
       white: { ...base.white, accuracy: whiteAccuracy || base.white.accuracy },
       black: { ...base.black, accuracy: blackAccuracy || base.black.accuracy },
+      opening: openingName ?? base.opening,
     };
-  }, [analyzedGame.headers, analysisProgress.total, whiteAccuracy, blackAccuracy]);
+  }, [analyzedGame.headers, analysisProgress.total, whiteAccuracy, blackAccuracy, openingName]);
 
   const [appearance, setAppearance] = useState<Appearance>(DEFAULT_APPEARANCE);
   const [flip, setFlip] = useState(false);

@@ -2,19 +2,27 @@
 
 import { useEffect, useState } from "react";
 import type { AnalysisGame } from "@/lib/chess-game";
-import type { Move, MoveClass } from "@/types/analysis";
-import { createEngine } from "./index";
+import type { Move } from "@/types/analysis";
+import {
+  classifyMove,
+  gameAccuracy,
+  moveAccuracy,
+  moverWinrate,
+  whiteWinrate,
+  type PositionEval,
+  type Score,
+} from "@/lib/analysis/classify";
+import { bookMoves, loadOpenings, type BookInfo } from "@/lib/analysis/openings";
+import { isSacrifice } from "@/lib/analysis/sacrifice";
+import { createEngine, type AnalysisInfo } from "./index";
 
-/** White-positive eval for one position in the game, plus the engine's top move. */
-interface PovEval {
-  cp?: number;
-  mate?: number;
-  /** Engine's PV[0] in UCI form (e.g. "e2e4" or "e7e8q"). */
-  bestUci?: string;
-}
-
-/** First N plies are tagged "book" when the move is reasonable in the opening. */
-const OPENING_PLIES = 16;
+const BASE_DEPTH = 16;
+const REFINE_DEPTH = 20;
+const MULTI_PV = 2;
+/** Win% swing that flags a position as critical for the refinement pass. */
+const REFINE_SWING = 15;
+/** Best-vs-second gap that makes a move a Great candidate worth refining. */
+const REFINE_GAP = 8;
 
 export interface GameAnalysisProgress {
   done: number;
@@ -26,31 +34,138 @@ export interface GameAnalysisResult {
   game: AnalysisGame;
   whiteAccuracy: number;
   blackAccuracy: number;
+  openingName: string | null;
   progress: GameAnalysisProgress;
 }
 
-/** Depth used for batch annotation — shallower than live eval to keep wall-time reasonable. */
-const DEPTH = 14;
+/** Convert a side-to-move engine result into a white-positive PositionEval. */
+function toPositionEval(fen: string, info: AnalysisInfo): PositionEval {
+  const sign = fen.split(" ")[1] === "b" ? -1 : 1;
+  const raw =
+    info.lines && info.lines.length > 0
+      ? info.lines
+      : [{ cp: info.cp, mate: info.mate, pv: info.pv }];
+  return {
+    lines: raw.map((l) => ({
+      score: {
+        cp: l.cp !== undefined ? l.cp * sign : undefined,
+        mate: l.mate !== undefined ? l.mate * sign : undefined,
+      },
+      uci: l.pv[0],
+    })),
+  };
+}
+
+interface Annotated {
+  moves: Move[];
+  white: number;
+  black: number;
+}
 
 /**
- * Walk Stockfish across every position in `game` and progressively fill in
- * per-move cp / mate / classification. Returns the live snapshot plus progress.
+ * Re-derive every classification + both accuracies from whatever evals exist.
+ * Pure and cheap (n = plies), so it simply reruns whenever evals change.
+ */
+function annotate(
+  game: AnalysisGame,
+  positions: (PositionEval | undefined)[],
+  book: BookInfo,
+): Annotated {
+  const moves = game.moves.slice();
+  const accEntries: { color: "w" | "b"; acc: number; isBook: boolean }[] = [];
+  const winrates: number[] = [];
+  if (positions[0]) winrates.push(whiteWinrate(positions[0].lines[0].score));
+
+  for (let i = 0; i < moves.length; i++) {
+    const before = positions[i];
+    const after = positions[i + 1];
+    if (!before || !after) break;
+    const m = moves[i];
+    const afterScore: Score = after.lines[0].score;
+    const playedUci = m.from + m.to + (m.promo ?? "");
+    const isBook = book.isBook[i] ?? false;
+    const cls = classifyMove({
+      mover: m.c,
+      playedUci,
+      before,
+      after: afterScore,
+      isBook,
+      sacrifice: () => isSacrifice(game.fens[i], playedUci),
+    });
+    moves[i] = { ...m, cls, cp: afterScore.cp, mate: afterScore.mate };
+
+    const loss = Math.max(
+      0,
+      moverWinrate(m.c, before.lines[0].score) - moverWinrate(m.c, afterScore),
+    );
+    accEntries.push({ color: m.c, acc: moveAccuracy(loss), isBook });
+    winrates.push(whiteWinrate(afterScore));
+  }
+
+  const { white, black } = gameAccuracy(accEntries, winrates);
+  return { moves, white, black };
+}
+
+/** Position indices worth a deeper look after the base pass. */
+function refinementTargets(
+  game: AnalysisGame,
+  positions: (PositionEval | undefined)[],
+  annotatedMoves: Move[],
+  book: BookInfo,
+): number[] {
+  const targets = new Set<number>();
+  for (let i = 0; i < game.moves.length; i++) {
+    const before = positions[i];
+    const after = positions[i + 1];
+    if (!before || !after || book.isBook[i]) continue;
+    const m = game.moves[i];
+    const cls = annotatedMoves[i].cls;
+    const wBefore = moverWinrate(m.c, before.lines[0].score);
+    const wAfter = moverWinrate(m.c, after.lines[0].score);
+    const second = before.lines[1];
+    const gap = second ? wBefore - moverWinrate(m.c, second.score) : 0;
+    const playedUci = m.from + m.to + (m.promo ?? "");
+    const playedIsBest = before.lines[0].uci === playedUci;
+
+    const critical =
+      cls === "mistake" ||
+      cls === "blunder" ||
+      cls === "miss" ||
+      cls === "great" ||
+      cls === "brilliant" ||
+      (playedIsBest && gap >= REFINE_GAP) ||
+      Math.abs(wBefore - wAfter) >= REFINE_SWING;
+
+    if (critical) {
+      targets.add(i);
+      targets.add(i + 1);
+    }
+  }
+  return [...targets].sort((a, b) => a - b);
+}
+
+/**
+ * Two-pass Stockfish annotation: every position at BASE_DEPTH / MultiPV 2,
+ * then critical positions again at REFINE_DEPTH. Classifications, accuracies
+ * and the opening name are re-derived progressively as evals arrive.
  */
 export function useGameAnalysis(game: AnalysisGame): GameAnalysisResult {
   const [annotated, setAnnotated] = useState<AnalysisGame>(game);
-  const [evals, setEvals] = useState<PovEval[]>([]);
-  const [done, setDone] = useState(0);
+  const [accuracy, setAccuracy] = useState({ white: 0, black: 0 });
+  const [openingName, setOpeningName] = useState<string | null>(null);
+  const [progress, setProgress] = useState({ done: 0, total: game.moves.length });
 
   useEffect(() => {
     setAnnotated(game);
-    setEvals([]);
-    setDone(0);
+    setAccuracy({ white: 0, black: 0 });
+    setOpeningName(null);
+    setProgress({ done: 0, total: game.moves.length });
 
     if (typeof window === "undefined") return;
     if (game.moves.length === 0) return;
-    // If every move already carries an eval, the game is pre-annotated (e.g. the demo).
+    // Pre-annotated games (e.g. the bundled demo) skip engine analysis.
     if (game.moves.every((m) => m.cp !== undefined || m.mate !== undefined)) {
-      setDone(game.moves.length);
+      setProgress({ done: game.moves.length, total: game.moves.length });
       return;
     }
 
@@ -59,41 +174,52 @@ export function useGameAnalysis(game: AnalysisGame): GameAnalysisResult {
 
     (async () => {
       try {
-        await engine.ready();
-        const local: PovEval[] = [];
+        const book = bookMoves(game.fens, await loadOpenings());
+        if (cancelled) return;
+        setOpeningName(book.openingName);
 
+        await engine.ready();
+        const positions: (PositionEval | undefined)[] = new Array(game.fens.length);
+
+        const apply = () => {
+          const { moves, white, black } = annotate(game, positions, book);
+          setAnnotated((cur) => ({ ...cur, moves }));
+          setAccuracy({ white, black });
+        };
+
+        // Base pass.
         for (let i = 0; i < game.fens.length; i++) {
           if (cancelled) return;
-          const info = await engine.analyze(game.fens[i], { depth: DEPTH });
+          const info = await engine.analyze(game.fens[i], {
+            depth: BASE_DEPTH,
+            multiPv: MULTI_PV,
+          });
           if (cancelled) return;
-
-          const stm = game.fens[i].split(" ")[1] === "b" ? "b" : "w";
-          const sign = stm === "w" ? 1 : -1;
-          const ev: PovEval = {
-            cp: info.cp !== undefined ? info.cp * sign : undefined,
-            mate: info.mate !== undefined ? info.mate * sign : undefined,
-            bestUci: info.pv[0],
-          };
-          local.push(ev);
-          setEvals(local.slice());
-
+          positions[i] = toPositionEval(game.fens[i], info);
           if (i > 0) {
-            const moveIdx = i - 1;
-            const m = game.moves[moveIdx];
-            const before = local[i - 1];
-            const isBest = movePlayedIsEngineBest(m, before.bestUci);
-            const isOpening = moveIdx < OPENING_PLIES;
-            const cls = classifyMove(m.c, before, ev, { isBest, isOpening });
-            setAnnotated((cur) => {
-              const moves = cur.moves.slice();
-              moves[moveIdx] = { ...moves[moveIdx], cls, cp: ev.cp, mate: ev.mate };
-              return { ...cur, moves };
-            });
-            setDone(moveIdx + 1);
+            apply();
+            setProgress((p) => ({ ...p, done: i }));
           }
         }
+
+        // Refinement pass over critical positions.
+        const base = annotate(game, positions, book);
+        const targets = refinementTargets(game, positions, base.moves, book);
+        setProgress({ done: game.moves.length, total: game.moves.length + targets.length });
+        for (let t = 0; t < targets.length; t++) {
+          if (cancelled) return;
+          const idx = targets[t];
+          const info = await engine.analyze(game.fens[idx], {
+            depth: REFINE_DEPTH,
+            multiPv: MULTI_PV,
+          });
+          if (cancelled) return;
+          positions[idx] = toPositionEval(game.fens[idx], info);
+          apply();
+          setProgress((p) => ({ ...p, done: game.moves.length + t + 1 }));
+        }
       } catch {
-        // Aborts / teardown land here — silently stop.
+        // Aborts / teardown land here — partial annotation stays visible.
       }
     })();
 
@@ -103,89 +229,15 @@ export function useGameAnalysis(game: AnalysisGame): GameAnalysisResult {
     };
   }, [game]);
 
-  const { whiteAccuracy, blackAccuracy } = computeAccuracies(annotated.moves, evals, done);
-
   return {
     game: annotated,
-    whiteAccuracy,
-    blackAccuracy,
-    progress: { done, total: game.moves.length, running: done < game.moves.length },
-  };
-}
-
-/** Lichess-style logistic mapping centipawns → winrate (0..100) for White. */
-function winrate({ cp, mate }: PovEval): number {
-  if (mate !== undefined) return mate > 0 ? 100 : 0;
-  if (cp === undefined) return 50;
-  const clamped = Math.max(-1500, Math.min(1500, cp));
-  return 50 + 50 * (2 / (1 + Math.exp(-0.00368208 * clamped)) - 1);
-}
-
-function movePlayedIsEngineBest(m: Move, bestUci: string | undefined): boolean {
-  if (!bestUci || bestUci.length < 4) return false;
-  return bestUci.slice(0, 4) === m.from + m.to;
-}
-
-function classifyMove(
-  mover: "w" | "b",
-  before: PovEval,
-  after: PovEval,
-  opts: { isBest: boolean; isOpening: boolean },
-): MoveClass {
-  const wBefore = winrate(before);
-  const wAfter = winrate(after);
-  const moverBefore = mover === "w" ? wBefore : 100 - wBefore;
-  const moverAfter = mover === "w" ? wAfter : 100 - wAfter;
-  const loss = moverBefore - moverAfter;
-
-  // "Best" requires actually matching the engine's top choice — otherwise even
-  // a near-zero-loss move is just "good" or "book", not best.
-  if (opts.isBest) return "best";
-  if (opts.isOpening && loss < 5) return "book";
-  if (loss < 5) return "good";
-  if (loss < 10) return "inaccuracy";
-  if (loss < 20) return "mistake";
-  return "blunder";
-}
-
-function moveAccuracyFromLoss(loss: number): number {
-  const a = 103.1668 * Math.exp(-0.04354 * Math.max(0, loss)) - 3.1668;
-  return Math.max(0, Math.min(100, a));
-}
-
-function computeAccuracies(
-  moves: Move[],
-  evals: PovEval[],
-  done: number,
-): { whiteAccuracy: number; blackAccuracy: number } {
-  if (done === 0 || evals.length < 2) return { whiteAccuracy: 0, blackAccuracy: 0 };
-  let wSum = 0;
-  let wCount = 0;
-  let bSum = 0;
-  let bCount = 0;
-  for (let i = 0; i < done && i + 1 < evals.length; i++) {
-    const before = evals[i];
-    const wB = winrate(before);
-    const wA = winrate(evals[i + 1]);
-    const m = moves[i];
-    const moverB = m.c === "w" ? wB : 100 - wB;
-    const moverA = m.c === "w" ? wA : 100 - wA;
-    // Floor non-best moves at ~2 winrate points of loss — depth noise can flip
-    // the raw delta negative, but a move the engine didn't pick shouldn't score 100%.
-    const isBest = movePlayedIsEngineBest(m, before.bestUci);
-    const rawLoss = moverB - moverA;
-    const loss = isBest ? Math.max(0, rawLoss) : Math.max(2, rawLoss);
-    const acc = moveAccuracyFromLoss(loss);
-    if (m.c === "w") {
-      wSum += acc;
-      wCount++;
-    } else {
-      bSum += acc;
-      bCount++;
-    }
-  }
-  return {
-    whiteAccuracy: wCount ? Math.round(wSum / wCount) : 0,
-    blackAccuracy: bCount ? Math.round(bSum / bCount) : 0,
+    whiteAccuracy: accuracy.white,
+    blackAccuracy: accuracy.black,
+    openingName,
+    progress: {
+      done: progress.done,
+      total: progress.total,
+      running: progress.done < progress.total,
+    },
   };
 }
