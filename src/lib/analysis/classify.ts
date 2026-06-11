@@ -73,6 +73,7 @@ const MISS_AFTER = 60; // dropping below this throws the chance away
 
 export function classifyMove(a: ClassifyArgs): MoveClass {
   if (a.isBook) return "book";
+  if (a.before.lines.length === 0) return "good"; // degenerate: no engine data
 
   const best = a.before.lines[0];
   const wBefore = moverWinrate(a.mover, best.score);

@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { moveAccuracy, moverScore, moverWinrate, whiteWinrate } from "./classify";
-import { classifyMove, type ClassifyArgs } from "./classify";
+import {
+  classifyMove,
+  moveAccuracy,
+  moverScore,
+  moverWinrate,
+  whiteWinrate,
+  type ClassifyArgs,
+} from "./classify";
 
 describe("whiteWinrate", () => {
   it("maps cp through the lichess logistic", () => {
@@ -222,5 +228,45 @@ describe("classifyMove ladder", () => {
     expect(classifyMove(args({ before: base, after: { cp: -180 } }))).toBe("mistake");
     // cp 0->-600: loss ~40.11 -> blunder
     expect(classifyMove(args({ before: base, after: { cp: -600 } }))).toBe("blunder");
+  });
+
+  it("newly allowing a forced mate upgrades inaccuracy to mistake", () => {
+    // before cp -700 (~7.1 win% for white) -> after mate -5 (0 win%): loss ~7.1 -> in [5,10) band.
+    // Without allowsMate the result would be "inaccuracy"; the upgrade makes it "mistake".
+    // wBefore < 75, so the miss rule does not fire.
+    expect(
+      classifyMove(
+        args({
+          before: { lines: [{ score: { cp: -700 }, uci: "g1f1" }] },
+          after: { mate: -5 },
+        }),
+      ),
+    ).toBe("mistake");
+  });
+
+  it("handles black as the mover (sign flips)", () => {
+    // Black to move: mate:-2 in best.score means mate FOR black; moverWinrate('b',{mate:-2})=100.
+    // After cp:-50 (black slightly better) moverWinrate('b',{cp:-50})~54.6 win%.
+    // loss ~45.4 >= 10, wAfter < 60 (MISS_AFTER), hadMate=true -> miss.
+    expect(
+      classifyMove(
+        args({
+          mover: "b",
+          before: { lines: [{ score: { mate: -2 }, uci: "d8h4" }] },
+          after: { cp: -50 }, // black still slightly better (~54.6 for black) but mate gone
+        }),
+      ),
+    ).toBe("miss");
+    // Black hangs mate-in-1 (after mate: 1 = white mates next move).
+    // oppMatesIn1: mover=b, after.mate===1 -> true -> blunder.
+    expect(
+      classifyMove(
+        args({
+          mover: "b",
+          before: { lines: [{ score: { cp: -600 }, uci: "d8h4" }] }, // black ~90 win%
+          after: { mate: 1 },
+        }),
+      ),
+    ).toBe("blunder");
   });
 });
