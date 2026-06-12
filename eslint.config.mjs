@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Static design reference exported from the prototyping tool — not app code.
+    "design-handoff/**",
+    // Vendored Stockfish build.
+    "public/engine/**",
   ]),
 ]);
 

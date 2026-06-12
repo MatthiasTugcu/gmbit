@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Gmbit — Game Analysis",
+  title: "gmbit — Game Analysis",
   description: "Chess game analysis with engine evaluation.",
 };
 

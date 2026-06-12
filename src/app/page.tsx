@@ -1,5 +1,5 @@
-import { AnalysisScreen } from "@/components/analysis/analysis-screen";
+import { LandingScreen } from "@/components/landing/landing-screen";
 
 export default function Page() {
-  return <AnalysisScreen />;
+  return <LandingScreen />;
 }

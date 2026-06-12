@@ -1,6 +1,18 @@
 import { Chess, DEFAULT_POSITION } from "chess.js";
 import type { Move, Players } from "@/types/analysis";
 
+/** chess.js v1 throws on illegal moves; normalise that back to null. */
+function moveOrNull(
+  chess: Chess,
+  move: { from: string; to: string; promotion?: string },
+): ReturnType<Chess["move"]> | null {
+  try {
+    return chess.move(move);
+  } catch {
+    return null;
+  }
+}
+
 export interface AnalysisGame {
   moves: Move[];
   fens: string[]; // length moves.length + 1; fens[0] = starting fen
@@ -19,7 +31,7 @@ export function gameFromAnnotated(
   const chess = new Chess(startingFen);
   const fens: string[] = [chess.fen()];
   for (const m of moves) {
-    const result = chess.move({ from: m.from, to: m.to, promotion: "q" });
+    const result = moveOrNull(chess, { from: m.from, to: m.to, promotion: "q" });
     if (!result) {
       throw new Error(`Illegal move at ply ${fens.length}: ${m.san}`);
     }
@@ -79,7 +91,7 @@ export function tryMove(
   promotion: string = "q",
 ): { fen: string; san: string; from: string; to: string } | null {
   const chess = new Chess(fen);
-  const m = chess.move({ from, to, promotion });
+  const m = moveOrNull(chess, { from, to, promotion });
   if (!m) return null;
   return { fen: chess.fen(), san: m.san, from: m.from, to: m.to };
 }
@@ -131,7 +143,7 @@ export function uciLineToSan(fen: string, uciMoves: string[]): string[] {
   const chess = new Chess(fen);
   const sans: string[] = [];
   for (const u of uciMoves) {
-    const m = chess.move({ ...parseUci(u) });
+    const m = moveOrNull(chess, parseUci(u));
     if (!m) break;
     sans.push(m.san);
   }

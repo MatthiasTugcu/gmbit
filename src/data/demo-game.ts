@@ -44,6 +44,6 @@ export const demoPlayers: Players = {
   opening: "Philidor Defence",
 };
 
-export const demoEngine: Engine = { name: "Gmbit Engine 16", kind: "NNUE", depth: 24 };
+export const demoEngine: Engine = { name: "gmbit Engine 16", kind: "NNUE", depth: 24 };
 
 export const demoPly = 18;

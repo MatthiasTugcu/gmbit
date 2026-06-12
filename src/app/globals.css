@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 /* ============================================================
-   Design tokens — two-axis theming:
-   1) .mode-dark / .mode-light  -> app chrome
-   2) [data-board="..."]        -> board squares
+   Design tokens. Board square palette hangs off [data-board="..."];
+   app chrome tokens live on :root (dark only — the light theme and
+   alternate board palettes left with the appearance switcher).
    ============================================================ */
 
 :root {
@@ -31,8 +31,6 @@
   --mono: var(--font-geist-mono), "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --sans: var(--font-sans), "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
 
-  /* Default to the dark token set so the page paints dark before React hydrates
-     (and so callers that don't set .mode-* still get a sensible theme). */
   --bg:    oklch(0.165 0.018 288);
   --bg-1:  oklch(0.195 0.022 288);
   --bg-2:  oklch(0.225 0.026 288);
@@ -45,38 +43,6 @@
   --shadow: 0 18px 50px -20px rgb(0 0 0 / 0.7);
   --glow: 0 0 0 1px var(--accent-line), 0 10px 40px -8px oklch(0.64 0.19 var(--accent-h) / 0.35);
   color-scheme: dark;
-}
-
-.mode-dark {
-  --bg:    oklch(0.165 0.018 288);
-  --bg-1:  oklch(0.195 0.022 288);
-  --bg-2:  oklch(0.225 0.026 288);
-  --bg-3:  oklch(0.265 0.030 288);
-  --line:  oklch(0.32 0.028 288);
-  --line-2:oklch(0.40 0.030 288);
-  --text:  oklch(0.96 0.008 288);
-  --text-2:oklch(0.74 0.018 288);
-  --text-3:oklch(0.56 0.020 288);
-  --shadow: 0 18px 50px -20px rgb(0 0 0 / 0.7);
-  --glow: 0 0 0 1px var(--accent-line), 0 10px 40px -8px oklch(0.64 0.19 var(--accent-h) / 0.35);
-  color-scheme: dark;
-}
-
-.mode-light {
-  --bg:    oklch(0.975 0.005 288);
-  --bg-1:  oklch(1 0 0);
-  --bg-2:  oklch(0.985 0.006 288);
-  --bg-3:  oklch(0.955 0.010 288);
-  --line:  oklch(0.90 0.012 288);
-  --line-2:oklch(0.83 0.016 288);
-  --text:  oklch(0.24 0.024 288);
-  --text-2:oklch(0.46 0.022 288);
-  --text-3:oklch(0.62 0.020 288);
-  --accent: oklch(0.56 0.20 var(--accent-h));
-  --accent-bright: oklch(0.62 0.21 var(--accent-h));
-  --shadow: 0 14px 40px -22px rgb(0 0 0 / 0.30);
-  --glow: 0 0 0 1px var(--accent-line), 0 10px 36px -10px oklch(0.56 0.20 var(--accent-h) / 0.28);
-  color-scheme: light;
 }
 
 [data-board="violet"] {
@@ -87,31 +53,6 @@
   --dot: oklch(0.80 0.05 295 / 0.45);
   --coord: oklch(0.78 0.04 292 / .65);
 }
-[data-board="slate"] {
-  --sq-light: oklch(0.66 0.012 250);
-  --sq-dark: oklch(0.45 0.016 250);
-  --hl: oklch(0.64 0.19 295 / 0.42);
-  --hl2: oklch(0.70 0.18 295 / 0.52);
-  --dot: oklch(0.25 0.02 250 / 0.40);
-  --coord: oklch(0.30 0.02 250 / .7);
-}
-[data-board="green"] {
-  --sq-light: oklch(0.90 0.045 110);
-  --sq-dark: oklch(0.54 0.075 148);
-  --hl: oklch(0.82 0.16 95 / 0.55);
-  --hl2: oklch(0.86 0.16 95 / 0.6);
-  --dot: oklch(0.30 0.04 145 / 0.38);
-  --coord: oklch(0.34 0.05 145 / .7);
-}
-[data-board="walnut"] {
-  --sq-light: oklch(0.76 0.060 70);
-  --sq-dark: oklch(0.46 0.070 52);
-  --hl: oklch(0.78 0.15 80 / 0.5);
-  --hl2: oklch(0.83 0.15 80 / 0.58);
-  --dot: oklch(0.30 0.05 55 / 0.40);
-  --coord: oklch(0.34 0.05 55 / .72);
-}
-
 @theme inline {
   --color-app: var(--bg);
   --color-bg-1: var(--bg-1);
@@ -158,7 +99,7 @@ body {
 button { font-family: inherit; cursor: pointer; }
 ::selection { background: var(--accent-soft); }
 
-.mode-dark .app-root::before {
+.app-root::before {
   content: "";
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background:
@@ -166,6 +107,13 @@ button { font-family: inherit; cursor: pointer; }
     radial-gradient(900px 600px at 110% 120%, oklch(0.64 0.19 var(--accent-h) / 0.07), transparent 55%);
 }
 
+/* Landing page panel reveal. */
+.rise-in { animation: rise-in 0.28s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .piece, .evalbar-fill { transition: none !important; }
+  .rise-in { animation: none; }
 }
