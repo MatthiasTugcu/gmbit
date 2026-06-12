@@ -8,11 +8,11 @@ interface Props {
 
 export function EvalBar({ cp, mate, height }: Props) {
   const share = whiteShare(cp, mate);
-  const txt = formatEval(cp, mate).replace("\u2212", "-").replace(/^\+/, "");
+  const txt = formatEval(cp, mate).replace(/^[+\u2212]/, "");
   const whiteAhead = share >= 0.5;
   return (
     <div
-      className="relative w-[22px] shrink-0 overflow-hidden border border-line bg-[oklch(0.20_0.02_288)] [.mode-light_&]:bg-[oklch(0.30_0.01_288)]"
+      className="relative w-[22px] shrink-0 overflow-hidden border border-line bg-[oklch(0.20_0.02_288)]"
       style={{ height }}
     >
       <div

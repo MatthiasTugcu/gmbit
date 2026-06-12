@@ -28,6 +28,11 @@ const HEADER_H = 24;
 export function EvalGraph({ moves, ply, width, height, onSeek }: Props) {
   const [hover, setHover] = useState<number | null>(null);
   const W = Math.max(200, width);
+  // The SVG sits inside the container's px-2 padding. Its viewBox must match
+  // the rendered size exactly: a scaled SVG (preserveAspectRatio="none")
+  // misaligns clicks and leaves ghost half-circle repaint artifacts when the
+  // move marker jumps.
+  const SW = W - 16;
   const chartH = Math.max(60, height - HEADER_H);
   const N = moves.length;
 
@@ -37,7 +42,7 @@ export function EvalGraph({ moves, ply, width, height, onSeek }: Props) {
   );
 
   const cy = chartH / 2;
-  const xFor = (i: number) => PAD_X + ((W - 2 * PAD_X) * i) / Math.max(1, N);
+  const xFor = (i: number) => PAD_X + ((SW - 2 * PAD_X) * i) / Math.max(1, N);
   // whiteShare goes 0..1 with 0.5 = even. Top = white winning, bottom = black winning.
   const yFor = (e: EvalPoint) =>
     PAD_Y + (chartH - 2 * PAD_Y) * (1 - whiteShare(e.cp, e.mate));
@@ -53,7 +58,7 @@ export function EvalGraph({ moves, ply, width, height, onSeek }: Props) {
 
   const seekFromX = (clientX: number, rect: DOMRect) => {
     const x = clientX - rect.left;
-    const i = Math.round(((x - PAD_X) / (W - 2 * PAD_X)) * N);
+    const i = Math.round(((x - PAD_X) / (SW - 2 * PAD_X)) * N);
     return Math.max(0, Math.min(N, i));
   };
 
@@ -76,10 +81,12 @@ export function EvalGraph({ moves, ply, width, height, onSeek }: Props) {
         </span>
       </div>
       <svg
-        viewBox={`0 0 ${W} ${chartH}`}
-        preserveAspectRatio="none"
-        className="block min-h-0 flex-1 cursor-crosshair"
-        style={{ height: chartH }}
+        viewBox={`0 0 ${SW} ${chartH}`}
+        width={SW}
+        height={chartH}
+        role="img"
+        aria-label="Evaluation graph — click to jump to a move"
+        className="block cursor-crosshair"
         onClick={(e) =>
           onSeek(seekFromX(e.clientX, e.currentTarget.getBoundingClientRect()))
         }
@@ -99,7 +106,7 @@ export function EvalGraph({ moves, ply, width, height, onSeek }: Props) {
         <line
           x1={PAD_X}
           y1={cy}
-          x2={W - PAD_X}
+          x2={SW - PAD_X}
           y2={cy}
           stroke="var(--line-2)"
           strokeWidth="1"
@@ -141,6 +148,7 @@ export function EvalGraph({ moves, ply, width, height, onSeek }: Props) {
           y2={chartH - PAD_Y + 6}
           stroke="var(--accent-bright)"
           strokeWidth="1.5"
+          pointerEvents="none"
         />
         <circle
           cx={pts[ply][0]}
@@ -149,6 +157,7 @@ export function EvalGraph({ moves, ply, width, height, onSeek }: Props) {
           fill="var(--bg-1)"
           stroke="var(--accent-bright)"
           strokeWidth="2.4"
+          pointerEvents="none"
         />
       </svg>
       {hover !== null && (
@@ -157,7 +166,7 @@ export function EvalGraph({ moves, ply, width, height, onSeek }: Props) {
           evals={evals}
           i={hover}
           pts={pts}
-          chartH={chartH}
+          svgWidth={SW}
         />
       )}
     </div>
@@ -169,21 +178,22 @@ function EgTooltip({
   evals,
   i,
   pts,
-  chartH,
+  svgWidth,
 }: {
   moves: Move[];
   evals: EvalPoint[];
   i: number;
   pts: [number, number][];
-  chartH: number;
+  svgWidth: number;
 }) {
   const m = i > 0 ? moves[i - 1] : null;
   const e = evals[i];
   const label = i === 0 ? "Start" : `${m!.n}${m!.c === "w" ? "." : "\u2026"} ${m!.san}`;
-  const left = pts[i][0];
-  // Float the tooltip just above the chart area.
-  const top = HEADER_H + Math.max(0, pts[i][1] - 12);
-  void chartH;
+  // pts are SVG coords; the SVG sits 8px (px-2/pt-2) plus the header strip
+  // inside the container. Clamp horizontally so the centered tooltip can't
+  // spill past the container edges near the first/last plies.
+  const left = Math.max(44, Math.min(pts[i][0] + 8, svgWidth - 28));
+  const top = 8 + (HEADER_H - 4) + Math.max(0, pts[i][1] - 12);
   return (
     <div
       className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-full rounded-md border border-line-2 bg-bg-3 px-[9px] py-1.5 text-[11.5px] text-text shadow-[var(--shadow)] whitespace-nowrap"

@@ -1,59 +1,112 @@
 "use client";
 
-import type { Appearance } from "@/types/analysis";
-import { Icons } from "./icons";
-import { AppearancePopover } from "./appearance-popover";
+import Link from "next/link";
+import { GmbitLogo } from "@/components/logo";
+import type { RecentGame } from "@/lib/chesscom";
+import type { PendingFetch } from "@/lib/pending-game";
 
 interface Props {
-  appearance: Appearance;
-  setAppearance: (a: Appearance) => void;
-  onImportPgn?: () => void;
+  /** The chess.com fetch the open game came from; absent for pasted/demo games. */
+  recentGames?: PendingFetch;
+  /** PGN of the currently open game, to highlight it in the list. */
+  activePgn?: string;
+  onSelectGame?: (g: RecentGame) => void;
 }
 
-export function TopBar({ appearance, setAppearance, onImportPgn }: Props) {
+/**
+ * The whole bar widens on hover (a 72px spacer keeps the layout footprint
+ * fixed, so the board never reflows). Collapsed it shows result dots for the
+ * player's most recent games; expanded, the clickable game list.
+ */
+export function TopBar({ recentGames, activePgn, onSelectGame }: Props) {
+  const games = recentGames?.games ?? [];
   return (
-    <div className="flex w-[72px] shrink-0 flex-col items-center gap-4 border-r border-line bg-bg-1/80 px-2 py-5 backdrop-blur-md">
-      <div className="flex flex-col items-center gap-2">
-        <svg
-          viewBox="0 0 45 45"
-          width="52"
-          height="52"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-label="Gmbit"
-        >
-          <g
-            fill="#ffffff"
-            stroke="#000000"
-            strokeWidth={1.5}
-            strokeLinejoin="round"
-          >
-            <path d="M 9,26 C 17.5,24.5 30,24.5 36,26 L 38.5,13.5 L 31,25 L 30.7,10.9 L 25.5,24.5 L 22.5,10 L 19.5,24.5 L 14.3,10.9 L 14,25 L 6.5,13.5 L 9,26 z" />
-            <path d="M 9,26 C 9,28 10.5,28 11.5,30 C 12.5,31.5 12.5,31 12,33.5 C 10.5,34.5 11,36 11,36 C 9.5,37.5 11,38.5 11,38.5 C 17.5,39.5 27.5,39.5 34,38.5 C 34,38.5 35.5,37.5 34,36 C 34,36 34.5,34.5 33,33.5 C 32.5,31 32.5,31.5 33.5,30 C 34.5,28 36,28 36,26 C 27.5,24.5 17.5,24.5 9,26 z" />
-            <path d="M 11.5,30 C 15,29 30,29 33.5,30" fill="none" />
-            <path d="M 12,33.5 C 18,32.5 27,32.5 33,33.5" fill="none" />
-            <circle cx="6" cy="12" r="2" />
-            <circle cx="14" cy="9" r="2" />
-            <circle cx="22.5" cy="8" r="2" />
-            <circle cx="31" cy="9" r="2" />
-            <circle cx="39" cy="12" r="2" />
-          </g>
-        </svg>
-        <span className="text-[13px] font-semibold tracking-tight text-text">Gmbit</span>
+    <div className="relative z-30 w-[72px] shrink-0">
+      <div className="group absolute inset-y-0 left-0 flex w-[72px] flex-col items-center gap-4 overflow-hidden border-r border-line bg-bg-1/80 px-2 py-5 backdrop-blur-md transition-[width] duration-200 hover:w-[280px] hover:bg-bg-1">
+        <Link href="/" className="flex flex-col items-center gap-2" title="gmbit home">
+          <GmbitLogo size={52} />
+          <span className="text-[13px] font-semibold tracking-tight text-text">gmbit</span>
+        </Link>
+
+        {games.length > 0 && (
+          <div className="relative min-h-0 flex-1 self-stretch">
+            <div className="absolute inset-y-0 left-0 flex w-[56px] flex-col items-center gap-[7px] pt-1 transition-opacity duration-150 group-hover:pointer-events-none group-hover:opacity-0">
+              {games.map((g, i) => (
+                <span
+                  key={`${g.endTime}-${i}`}
+                  className={`h-[7px] w-[7px] shrink-0 rounded-full ${DOT_COLOR[g.outcome]}`}
+                />
+              ))}
+            </div>
+
+            <ul className="pointer-events-none absolute inset-y-0 left-0 w-[264px] divide-y divide-line overflow-y-auto opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+              {games.map((g, i) => (
+                <GameRow
+                  key={`${g.endTime}-${i}`}
+                  game={g}
+                  active={g.pgn === activePgn}
+                  onSelect={() => onSelectGame?.(g)}
+                />
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
+    </div>
+  );
+}
 
-      <div className="flex-1" />
+const DOT_COLOR: Record<RecentGame["outcome"], string> = {
+  won: "bg-emerald-400",
+  lost: "bg-red-400",
+  draw: "bg-[oklch(0.55_0.01_288)]",
+};
 
-      <AppearancePopover appearance={appearance} setAppearance={setAppearance} />
-
+function GameRow({
+  game,
+  active,
+  onSelect,
+}: {
+  game: RecentGame;
+  active: boolean;
+  onSelect: () => void;
+}) {
+  const opponent = game.userSide === "white" ? game.black : game.white;
+  const date = new Date(game.endTime * 1000).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
+  return (
+    <li>
       <button
         type="button"
-        onClick={onImportPgn}
-        title="Import PGN"
-        aria-label="Import PGN"
-        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-transparent bg-gradient-to-br from-accent-bright to-accent text-white shadow-[0_6px_18px_-8px_var(--accent)] transition-[filter,transform] duration-150 hover:brightness-110 active:translate-y-px [&_svg]:h-[16px] [&_svg]:w-[16px]"
+        onClick={onSelect}
+        className={`flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors duration-100 ${
+          active ? "bg-accent/10" : "hover:bg-bg-2"
+        }`}
       >
-        {Icons.importPgn}
+        <span className={`h-[7px] w-[7px] shrink-0 rounded-full ${DOT_COLOR[game.outcome]}`} />
+        <span className="min-w-0 flex-1 truncate text-[12px] text-text">
+          <span className="text-text-3">vs</span> {opponent}
+        </span>
+        {active && (
+          <span className="shrink-0 text-[9.5px] font-semibold uppercase tracking-wide text-accent-bright">
+            open
+          </span>
+        )}
+        <span
+          className={`w-[16px] shrink-0 rounded-[4px] border border-line-2 py-0.5 text-center text-[9px] font-semibold ${
+            game.userSide === "white"
+              ? "bg-[oklch(0.95_0.005_288)] text-[oklch(0.18_0.02_288)]"
+              : "bg-[oklch(0.18_0.02_288)] text-[oklch(0.95_0.005_288)]"
+          }`}
+        >
+          {game.userSide === "white" ? "W" : "B"}
+        </span>
+        <span className="w-[42px] shrink-0 text-right text-[10.5px] tabular-nums text-text-3">
+          {date}
+        </span>
       </button>
-    </div>
+    </li>
   );
 }

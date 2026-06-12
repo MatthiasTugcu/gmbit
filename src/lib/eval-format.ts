@@ -1,7 +1,7 @@
 export function formatEval(cp?: number, mate?: number): string {
   if (mate !== undefined && mate !== null) {
     if (mate === 0) return "#";
-    return "M" + mate;
+    return (mate < 0 ? "−" : "") + "M" + Math.abs(mate);
   }
   const pawns = (cp ?? 0) / 100;
   const sign = (cp ?? 0) >= 0 ? "+" : "\u2212";
@@ -20,7 +20,7 @@ export function whiteShare(cp?: number, mate?: number): number {
 export function assessLabel(cp?: number, mate?: number): string {
   if (mate !== undefined && mate !== null) {
     if (mate === 0) return "Checkmate.";
-    return "Forced mate for White.";
+    return `Forced mate for ${mate > 0 ? "White" : "Black"}.`;
   }
   const p = (cp ?? 0) / 100;
   const a = Math.abs(p);

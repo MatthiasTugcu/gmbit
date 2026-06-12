@@ -16,8 +16,8 @@ interface Props {
   moveClass?: MoveClass | null;
   /** Currently selected square (click-to-move source). */
   selectedSquare?: Square | null;
-  /** Destination squares to mark with legal-move dots. */
-  legalTargets?: Square[];
+  /** Destination squares to mark with legal-move dots (ring when a capture). */
+  legalTargets?: { square: Square; capture: boolean }[];
   /** Best-move arrow (engine PV[0]) drawn as a single arrow. */
   bestArrow?: { from: Square; to: Square } | null;
   onPieceDrop?: (from: string, to: string) => boolean;
@@ -81,15 +81,14 @@ export function Board({
     const capture =
       "radial-gradient(circle at center, transparent 58%, var(--dot) 60%, var(--dot) 78%, transparent 80%)";
     for (const t of legalTargets) {
-      // Heuristic: a target marked as the highlight.to of the last move means
-      // we shouldn't override. Otherwise pick a "capture ring" when the square
-      // already has its own styling (from highlight) — keep it simple here and
-      // always draw a centered dot. Captures still register visually because
-      // the dot sits over the piece.
-      const prev = squareStyles[t]?.background;
-      squareStyles[t] = {
-        ...squareStyles[t],
-        background: prev ? `${dot}, ${prev}` : (prev === undefined ? dot : capture),
+      // Empty target squares get a centered dot, occupied ones a capture ring
+      // (so the piece underneath stays visible). Layer over any existing
+      // highlight background instead of replacing it.
+      const mark = t.capture ? capture : dot;
+      const prev = squareStyles[t.square]?.background;
+      squareStyles[t.square] = {
+        ...squareStyles[t.square],
+        background: prev ? `${mark}, ${prev}` : mark,
       };
     }
   }

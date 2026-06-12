@@ -1,12 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { Chess } from "chess.js";
 import type { AnalysisGame } from "@/lib/chess-game";
 import { gameFromAnnotated, playersFromHeaders, tryMove } from "@/lib/chess-game";
+import type { RecentGame } from "@/lib/chesscom";
+import type { PendingFetch } from "@/lib/pending-game";
+import { loadPly, savePly } from "@/lib/ply-storage";
 import { useEngineEval } from "@/lib/engine/use-engine-eval";
 import { useGameAnalysis } from "@/lib/engine/use-game-analysis";
-import type { Appearance, Move, Square } from "@/types/analysis";
+import type { Move, Square } from "@/types/analysis";
 import { demoMoves, demoPlayers, demoPly } from "@/data/demo-game";
 
 import { TopBar } from "./top-bar";
@@ -18,23 +21,6 @@ import { Controls } from "./controls";
 import { Board } from "./board";
 import { EvalBar } from "./eval-bar";
 import { EvalGraph } from "./eval-graph";
-import { PgnImportDialog } from "./pgn-import-dialog";
-
-const APPEARANCE_KEY = "gmbit.appearance";
-const PLY_KEY = "gmbit.ply";
-const DEFAULT_APPEARANCE: Appearance = { mode: "dark", board: "violet", coords: true };
-
-function loadAppearance(): Appearance {
-  if (typeof window === "undefined") return DEFAULT_APPEARANCE;
-  try {
-    const raw = window.localStorage.getItem(APPEARANCE_KEY);
-    if (!raw) return DEFAULT_APPEARANCE;
-    const parsed = JSON.parse(raw) as Partial<Appearance>;
-    return { ...DEFAULT_APPEARANCE, ...parsed };
-  } catch {
-    return DEFAULT_APPEARANCE;
-  }
-}
 
 interface Variation {
   baseFen: string; // FEN before the user move (i.e. fens[ply])
@@ -44,12 +30,15 @@ interface Variation {
 
 interface Props {
   initialGame?: AnalysisGame;
+  /** The chess.com fetch the game came from, for the sidebar game switcher. */
+  recentGames?: PendingFetch;
+  /** PGN of the currently open game, to highlight it in the switcher. */
+  activePgn?: string;
+  onSelectGame?: (g: RecentGame) => void;
 }
 
-export function AnalysisScreen({ initialGame }: Props) {
-  const [game, setGame] = useState<AnalysisGame>(
-    () => initialGame ?? gameFromAnnotated(demoMoves),
-  );
+export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGame }: Props) {
+  const [game] = useState<AnalysisGame>(() => initialGame ?? gameFromAnnotated(demoMoves));
   const {
     game: analyzedGame,
     whiteAccuracy,
@@ -74,49 +63,33 @@ export function AnalysisScreen({ initialGame }: Props) {
     };
   }, [analyzedGame.headers, analysisProgress.total, whiteAccuracy, blackAccuracy, openingName]);
 
-  const [appearance, setAppearance] = useState<Appearance>(DEFAULT_APPEARANCE);
   const [flip, setFlip] = useState(false);
-  const [ply, setPly] = useState<number>(Math.min(demoPly, total));
+  // Imported games open at the start; only the demo opens mid-game at its
+  // showcase position.
+  const [ply, setPly] = useState<number>(initialGame ? 0 : Math.min(demoPly, total));
   const [variation, setVariation] = useState<Variation | null>(null);
-  const [pgnOpen, setPgnOpen] = useState(false);
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
 
   useEffect(() => {
-    setAppearance(loadAppearance());
-    try {
-      const stored = window.localStorage.getItem(PLY_KEY);
-      if (stored !== null) {
-        const p = Number(stored);
-        if (!Number.isNaN(p)) setPly(Math.max(0, Math.min(total, p)));
-      }
-    } catch {
-      /* ignore */
-    }
-    // Run once on mount only — re-running on `total` change would override
-    // the import handler's setPly(0) with a stale ply from localStorage.
+    // The stored ply is fingerprinted to the game, so a ply saved while
+    // browsing an imported game can never land on the wrong move here.
+    const stored = loadPly(window.localStorage, game);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot restore from localStorage on mount
+    if (stored !== null) setPly(stored);
+    // Run once on mount only — re-running on game change would override
+    // the import handler's setPly(0).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem(APPEARANCE_KEY, JSON.stringify(appearance));
-    } catch {
-      /* ignore */
-    }
-  }, [appearance]);
-
-  useEffect(() => {
     if (variation) return;
-    try {
-      window.localStorage.setItem(PLY_KEY, String(ply));
-    } catch {
-      /* ignore */
-    }
-  }, [ply, variation]);
+    savePly(window.localStorage, game, ply);
+  }, [game, ply, variation]);
 
   const seek = useCallback(
     (p: number) => {
       setVariation(null);
+      setSelectedSquare(null);
       setPly(Math.max(0, Math.min(total, p)));
     },
     [total],
@@ -124,6 +97,8 @@ export function AnalysisScreen({ initialGame }: Props) {
 
   const onPieceDrop = useCallback(
     (from: string, to: string): boolean => {
+      // Any successful move changes the position, so drop the selection.
+      setSelectedSquare(null);
       // If in a variation, try to extend it.
       if (variation) {
         const moved = tryMove(variation.fen, from, to);
@@ -161,10 +136,18 @@ export function AnalysisScreen({ initialGame }: Props) {
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
       if (e.key === "ArrowRight") seek(ply + 1);
       else if (e.key === "ArrowLeft") seek(ply - 1);
-      else if (e.key === "Home") seek(0);
-      else if (e.key === "End") seek(total);
-      else if (e.key === "Escape") setVariation(null);
-      else if (e.key === "f" || e.key === "F") setFlip((f) => !f);
+      else if (e.key === "ArrowUp" || e.key === "Home") seek(0);
+      else if (e.key === "ArrowDown" || e.key === "End") seek(total);
+      else if (e.key === "Escape") {
+        setVariation(null);
+        setSelectedSquare(null);
+        return;
+      } else if (e.key === "f" || e.key === "F") {
+        setFlip((f) => !f);
+        return;
+      } else return;
+      // Arrow keys and Home/End must not scroll the page while navigating.
+      e.preventDefault();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
@@ -173,16 +156,13 @@ export function AnalysisScreen({ initialGame }: Props) {
   const curMove: Move | null = variation ? null : ply > 0 ? analyzedGame.moves[ply - 1] : null;
   const positionFen = variation ? variation.fen : analyzedGame.fens[ply];
 
-  // Clear selection whenever the position changes (ply step, variation toggle, new game).
-  useEffect(() => {
-    setSelectedSquare(null);
-  }, [positionFen]);
-
   // Legal-move dots: only when the user has selected a piece.
-  const legalTargets = useMemo<Square[]>(() => {
+  const legalTargets = useMemo<{ square: Square; capture: boolean }[]>(() => {
     if (!selectedSquare) return [];
     const c = new Chess(positionFen);
-    return c.moves({ square: selectedSquare as never, verbose: true }).map((m) => m.to as Square);
+    return c
+      .moves({ square: selectedSquare as never, verbose: true })
+      .map((m) => ({ square: m.to as Square, capture: m.isCapture() || m.isEnPassant() }));
   }, [selectedSquare, positionFen]);
 
   const onSquareClick = useCallback(
@@ -218,7 +198,11 @@ export function AnalysisScreen({ initialGame }: Props) {
     [positionFen, selectedSquare, onPieceDrop],
   );
 
-  const engineEval = useEngineEval(positionFen, 20);
+  // Pause the live eval while the two-pass game analysis runs: the lite
+  // Stockfish build is single-threaded, so a second concurrent search would
+  // roughly halve analysis throughput.
+  const liveEvalEnabled = !analysisProgress.running;
+  const engineEval = useEngineEval(positionFen, 20, liveEvalEnabled);
 
   // Best-move arrow from the engine's PV[0], e.g. "e2e4" → { from: "e2", to: "e4" }.
   const bestArrow = useMemo<{ from: Square; to: Square } | null>(() => {
@@ -258,16 +242,25 @@ export function AnalysisScreen({ initialGame }: Props) {
   }, [variation, curMove, analyzedGame, ply]);
 
   // Responsive board/rail sizing — recompute whenever the viewport changes.
-  // Sidebar (72) on the left, rail on the right, graph below the board.
+  // Sidebar on the left, rail on the right, graph below the board. Below
+  // WRAP_BREAKPOINT the rail wraps under the board (flex-wrap), so its width
+  // no longer constrains the board.
   const railWidth = 360;
   const sidebarWidth = 72;
   const graphHeight = 110;
+  const evalBarWidth = 22;
+  const boardGap = 12;
+  const wrapBreakpoint = 980;
   const [boardSize, setBoardSize] = useState(560);
   const [railHeight, setRailHeight] = useState(620);
-  useEffect(() => {
+  // Layout effect: measure before paint so the board doesn't visibly jump
+  // from the 560px default on first load.
+  useLayoutEffect(() => {
     const calc = () => {
+      const wrapped = window.innerWidth < wrapBreakpoint;
       const h = window.innerHeight - 44 - (graphHeight + 12);
-      const w = window.innerWidth - sidebarWidth - 22 - (railWidth + 18) - 52;
+      const w =
+        window.innerWidth - sidebarWidth - evalBarWidth - (wrapped ? 0 : railWidth + 18) - 52;
       setBoardSize(Math.max(300, Math.min(h, w, 624)));
       setRailHeight(Math.max(420, Math.min(window.innerHeight - 44, 760)));
     };
@@ -275,39 +268,28 @@ export function AnalysisScreen({ initialGame }: Props) {
     window.addEventListener("resize", calc);
     return () => window.removeEventListener("resize", calc);
   }, []);
+  // Width of the board column: eval bar + gap + board.
+  const boardColumnWidth = boardSize + evalBarWidth + boardGap;
 
   return (
-    <div
-      className={`app-root relative z-[1] flex h-screen mode-${appearance.mode}`}
-      data-board={appearance.board}
-    >
-      <TopBar
-        appearance={appearance}
-        setAppearance={setAppearance}
-        onImportPgn={() => setPgnOpen(true)}
-      />
-      <PgnImportDialog
-        open={pgnOpen}
-        onClose={() => setPgnOpen(false)}
-        onImport={(g) => {
-          setGame(g);
-          setPly(0);
-          setVariation(null);
-        }}
-      />
-      <div className="flex min-h-0 flex-1 items-center justify-center gap-[18px] overflow-auto px-[26px] py-[22px]">
+    <div className="app-root relative z-[1] flex h-screen" data-board="violet">
+      <TopBar recentGames={recentGames} activePgn={activePgn} onSelectGame={onSelectGame} />
+      <div className="flex min-h-0 flex-1 flex-wrap content-center items-center justify-center gap-[18px] overflow-auto px-[26px] py-[22px]">
         <div className="flex flex-col items-center gap-2">
           {variation && (
             <div
               className="flex items-center gap-3 rounded-md border border-accent-line bg-bg-1 px-3 py-1.5 text-[12.5px] text-text"
-              style={{ width: boardSize + 22 + 12 }}
+              style={{ width: boardColumnWidth }}
             >
               <span className="flex-1">
                 Exploring a <b className="text-accent-bright">variation</b> — not in the game
               </span>
               <button
                 type="button"
-                onClick={() => setVariation(null)}
+                onClick={() => {
+                  setVariation(null);
+                  setSelectedSquare(null);
+                }}
                 className="h-[26px] rounded-md border border-line-2 bg-bg-2 px-[11px] text-xs font-medium text-text hover:border-accent"
               >
                 Return to game
@@ -316,7 +298,7 @@ export function AnalysisScreen({ initialGame }: Props) {
           )}
           <PlayerStrip
             player={flip ? players.white : players.black}
-            width={boardSize + 22 + 12}
+            width={boardColumnWidth}
           />
           <div className="flex items-stretch gap-3">
             <EvalBar cp={curEval.cp} mate={curEval.mate} height={boardSize} />
@@ -324,7 +306,7 @@ export function AnalysisScreen({ initialGame }: Props) {
               position={positionFen}
               size={boardSize}
               flip={flip}
-              showCoords={appearance.coords}
+              showCoords
               highlight={lastMove}
               checkSquare={checkSquare}
               moveClass={curMove?.cls ?? null}
@@ -337,12 +319,12 @@ export function AnalysisScreen({ initialGame }: Props) {
           </div>
           <PlayerStrip
             player={flip ? players.black : players.white}
-            width={boardSize + 22 + 12}
+            width={boardColumnWidth}
           />
           <EvalGraph
             moves={analyzedGame.moves}
             ply={ply}
-            width={boardSize + 22 + 12}
+            width={boardColumnWidth}
             height={graphHeight}
             onSeek={seek}
           />
@@ -352,6 +334,14 @@ export function AnalysisScreen({ initialGame }: Props) {
           className="flex min-h-0 shrink-0 flex-col divide-y divide-line overflow-hidden rounded-md border border-line bg-bg-1"
           style={{ width: railWidth, height: railHeight }}
         >
+          <div className="px-[15px] py-[11px]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.09em] text-text-3">
+              Opening
+            </div>
+            <div className="mt-0.5 truncate text-[13px] font-medium text-text" title={players.opening}>
+              {players.opening}
+            </div>
+          </div>
           {variation && (
             <div className="px-[15px] py-[14px]">
               <div className="flex items-center gap-3.5">
@@ -378,7 +368,13 @@ export function AnalysisScreen({ initialGame }: Props) {
             sanLine={engineEval.pvSan}
             startNumber={startNumber}
             startColor={stm}
-            emptyLabel={engineEval.hasResult ? "End of game." : "Thinking…"}
+            emptyLabel={
+              engineEval.hasResult
+                ? "End of game."
+                : liveEvalEnabled
+                  ? "Thinking…"
+                  : "Waiting for game analysis…"
+            }
           />
           <MoveList moves={analyzedGame.moves} ply={ply} onSeek={seek} />
           <Accuracy players={players} />
@@ -409,11 +405,11 @@ function PlayerStrip({
         style={{ background: isWhite ? "oklch(0.95 0.005 288)" : "oklch(0.18 0.02 288)" }}
         aria-hidden
       />
-      <div className="min-w-0 flex-1 truncate text-[13px] font-medium text-text">
+      <div className="min-w-0 truncate text-[13px] font-medium text-text">
         {player.name}
       </div>
       {player.rating !== null && (
-        <span className="rounded-[5px] border border-line px-[7px] py-[2px] font-mono text-[11px] text-text-2">
+        <span className="shrink-0 rounded-[5px] border border-line px-[7px] py-[2px] font-mono text-[11px] text-text-2">
           {player.rating}
         </span>
       )}
