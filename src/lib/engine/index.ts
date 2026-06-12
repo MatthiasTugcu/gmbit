@@ -79,7 +79,7 @@ export function createEngine(): Engine {
   let lastMultiPv = 1;
 
   let resolveReady: () => void = () => {};
-  let readyPromise: Promise<void> = new Promise((r) => {
+  const readyPromise: Promise<void> = new Promise((r) => {
     resolveReady = r;
   });
   let isReady = false;

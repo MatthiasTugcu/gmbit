@@ -4,26 +4,33 @@ import { useEffect, useState } from "react";
 import type { AnalysisGame } from "@/lib/chess-game";
 import type { Move } from "@/types/analysis";
 import {
+  ACCURACY_HOPELESS,
+  accMoverWinrate,
   classifyMove,
   gameAccuracy,
   moveAccuracy,
-  moverWinrate,
-  whiteWinrate,
   type MoveAccEntry,
   type PositionEval,
   type Score,
 } from "@/lib/analysis/classify";
 import { bookMoves, loadOpenings, type BookInfo } from "@/lib/analysis/openings";
 import { isSacrifice } from "@/lib/analysis/sacrifice";
-import { createEngine, type AnalysisInfo } from "./index";
+import { createEngine, type AnalysisInfo, type Engine } from "./index";
+import { mapPool } from "./pool";
 
-const BASE_DEPTH = 16;
+const BASE_DEPTH = 14;
 const REFINE_DEPTH = 20;
 const MULTI_PV = 2;
-/** Win% swing that flags a position as critical for the refinement pass. */
-const REFINE_SWING = 15;
-/** Best-vs-second gap that makes a move a Great candidate worth refining. */
-const REFINE_GAP = 8;
+/**
+ * Hard cap per deep-pass search. Most positions reach depth 20 well inside
+ * this; the cap only trims pathological positions that would otherwise hold
+ * the whole analysis (and its progress bar) hostage for 30+ seconds.
+ */
+const REFINE_MOVETIME_MS = 5000;
+/** Engine workers analysing in parallel. Each is a single-threaded WASM
+ * Stockfish, so the pool scales with cores; leave headroom for the UI. */
+const POOL_LANES = () =>
+  Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 4) - 2));
 
 export interface GameAnalysisProgress {
   done: number;
@@ -78,9 +85,8 @@ function annotate(
 ): Annotated {
   const moves = game.moves.slice();
   const accEntries: MoveAccEntry[] = [];
-  const winrates: number[] = [];
-  if (positions[0]) winrates.push(whiteWinrate(positions[0].lines[0].score));
-
+  // Accuracy losses run on the steeper accuracy curve; classification inside
+  // classifyMove keeps the lichess curve.
   for (let i = 0; i < moves.length; i++) {
     const before = positions[i];
     const after = positions[i + 1];
@@ -99,60 +105,38 @@ function annotate(
     });
     moves[i] = { ...m, cls, cp: afterScore.cp, mate: afterScore.mate };
 
-    const loss = Math.max(
-      0,
-      moverWinrate(m.c, before.lines[0].score) - moverWinrate(m.c, afterScore),
-    );
-    accEntries.push({ color: m.c, acc: moveAccuracy(loss), isBook });
-    winrates.push(whiteWinrate(afterScore));
+    const wBefore = accMoverWinrate(m.c, before.lines[0].score);
+    const wAfter = accMoverWinrate(m.c, afterScore);
+    const loss = Math.max(0, wBefore - wAfter);
+    const hopeless = wBefore < ACCURACY_HOPELESS && wAfter < ACCURACY_HOPELESS;
+    accEntries.push({ color: m.c, acc: moveAccuracy(loss), excluded: isBook || hopeless });
   }
 
-  const { white, black } = gameAccuracy(accEntries, winrates);
+  const { white, black } = gameAccuracy(accEntries);
   return { moves, white, black };
 }
 
-/** Position indices worth a deeper look after the base pass. */
-function refinementTargets(
-  game: AnalysisGame,
-  positions: (PositionEval | undefined)[],
-  annotatedMoves: Move[],
-  book: BookInfo,
-): number[] {
+/**
+ * Position indices for the deep pass: every position that feeds a non-book
+ * move's classification or accuracy. Refining only "critical-looking"
+ * positions inflates accuracy — a tactic the shallow pass misses entirely
+ * never looks critical, so its loss stays at ~0 and the move scores ~100%.
+ */
+function refinementTargets(game: AnalysisGame, book: BookInfo): number[] {
   const targets = new Set<number>();
   for (let i = 0; i < game.moves.length; i++) {
-    const before = positions[i];
-    const after = positions[i + 1];
-    if (!before || !after || book.isBook[i]) continue;
-    const m = game.moves[i];
-    const cls = annotatedMoves[i].cls;
-    const wBefore = moverWinrate(m.c, before.lines[0].score);
-    const wAfter = moverWinrate(m.c, after.lines[0].score);
-    const second = before.lines[1];
-    const gap = second ? wBefore - moverWinrate(m.c, second.score) : 0;
-    const playedUci = m.from + m.to + (m.promo ?? "");
-    const playedIsBest = before.lines[0].uci === playedUci;
-
-    const critical =
-      cls === "mistake" ||
-      cls === "blunder" ||
-      cls === "miss" ||
-      cls === "great" ||
-      cls === "brilliant" ||
-      (playedIsBest && gap >= REFINE_GAP) ||
-      Math.abs(wBefore - wAfter) >= REFINE_SWING;
-
-    if (critical) {
-      targets.add(i);
-      targets.add(i + 1);
-    }
+    if (book.isBook[i]) continue;
+    targets.add(i);
+    targets.add(i + 1);
   }
   return [...targets].sort((a, b) => a - b);
 }
 
 /**
- * Two-pass Stockfish annotation: every position at BASE_DEPTH / MultiPV 2,
- * then critical positions again at REFINE_DEPTH. Classifications, accuracies
- * and the opening name are re-derived progressively as evals arrive.
+ * Two-pass Stockfish annotation: a quick pass at BASE_DEPTH / MultiPV 2 for
+ * fast progressive feedback, then every non-book position again at
+ * REFINE_DEPTH so final classifications and accuracy rest on uniformly deep
+ * evals. Results are re-derived progressively as evals arrive.
  */
 export function useGameAnalysis(game: AnalysisGame): GameAnalysisResult {
   const [annotated, setAnnotated] = useState<AnalysisGame>(game);
@@ -178,7 +162,11 @@ export function useGameAnalysis(game: AnalysisGame): GameAnalysisResult {
     }
 
     let cancelled = false;
-    const engine = createEngine();
+    const engines: Engine[] = [];
+    const destroyEngines = () => {
+      engines.forEach((e) => e.destroy());
+      engines.length = 0;
+    };
 
     (async () => {
       try {
@@ -186,7 +174,15 @@ export function useGameAnalysis(game: AnalysisGame): GameAnalysisResult {
         if (cancelled) return;
         setOpeningName(book.openingName);
 
-        await engine.ready();
+        // Both passes' search counts are known upfront, so the progress bar
+        // is monotonic — no backward jump when the deep pass starts.
+        const targets = refinementTargets(game, book);
+        const totalSearches = game.fens.length + targets.length;
+        let done = 0;
+        setProgress({ done, total: totalSearches });
+
+        for (let i = 0; i < POOL_LANES(); i++) engines.push(createEngine());
+        await Promise.all(engines.map((e) => e.ready()));
         const positions: (PositionEval | undefined)[] = new Array(game.fens.length);
 
         const apply = () => {
@@ -195,37 +191,29 @@ export function useGameAnalysis(game: AnalysisGame): GameAnalysisResult {
           setAccuracy({ white, black });
         };
 
-        // Base pass.
-        for (let i = 0; i < game.fens.length; i++) {
-          if (cancelled) return;
-          const info = await engine.analyze(game.fens[i], {
-            depth: BASE_DEPTH,
-            multiPv: MULTI_PV,
-          });
-          if (cancelled) return;
-          positions[i] = toPositionEval(game.fens[i], info);
-          if (i > 0) {
+        const runPass = (indices: number[], depth: number, movetime?: number) =>
+          mapPool(indices, engines.length, async (idx, lane) => {
+            if (cancelled) return;
+            const info = await engines[lane].analyze(game.fens[idx], {
+              depth,
+              multiPv: MULTI_PV,
+              movetime,
+            });
+            if (cancelled) return;
+            positions[idx] = toPositionEval(game.fens[idx], info);
             apply();
-            setProgress((p) => ({ ...p, done: i }));
-          }
-        }
-
-        // Refinement pass over critical positions.
-        const base = annotate(game, positions, book);
-        const targets = refinementTargets(game, positions, base.moves, book);
-        setProgress({ done: game.moves.length, total: game.moves.length + targets.length });
-        for (let t = 0; t < targets.length; t++) {
-          if (cancelled) return;
-          const idx = targets[t];
-          const info = await engine.analyze(game.fens[idx], {
-            depth: REFINE_DEPTH,
-            multiPv: MULTI_PV,
+            done++;
+            setProgress({ done, total: totalSearches });
           });
-          if (cancelled) return;
-          positions[idx] = toPositionEval(game.fens[idx], info);
-          apply();
-          setProgress((p) => ({ ...p, done: game.moves.length + t + 1 }));
-        }
+
+        // Base pass over every position, then the deep pass over every
+        // position the classifications/accuracy use.
+        await runPass(game.fens.map((_, i) => i), BASE_DEPTH);
+        if (cancelled) return;
+        await runPass(targets, REFINE_DEPTH, REFINE_MOVETIME_MS);
+        // Analysis is finished — free the workers without waiting for the
+        // next game change or unmount.
+        destroyEngines();
       } catch (err) {
         // Aborts / teardown land here — stay silent for those; surface real bugs.
         if (!cancelled) console.error("game analysis failed:", err);
@@ -234,7 +222,7 @@ export function useGameAnalysis(game: AnalysisGame): GameAnalysisResult {
 
     return () => {
       cancelled = true;
-      engine.destroy();
+      destroyEngines();
     };
   }, [game]);
 

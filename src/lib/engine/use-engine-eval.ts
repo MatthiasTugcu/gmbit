@@ -23,6 +23,21 @@ export interface EngineEval {
 
 const EMPTY: EngineEval = { depth: 0, pvSan: [], hasResult: false };
 
+/**
+ * Finished searches keyed by `depth:fen`, so stepping back through moves
+ * re-shows results instantly instead of re-searching from depth 1.
+ */
+const CACHE_MAX = 500;
+const evalCache = new Map<string, EngineEval>();
+
+function cachePut(key: string, value: EngineEval) {
+  if (evalCache.size >= CACHE_MAX) {
+    const oldest = evalCache.keys().next().value;
+    if (oldest !== undefined) evalCache.delete(oldest);
+  }
+  evalCache.set(key, value);
+}
+
 function sideToMove(fen: string): "w" | "b" {
   const parts = fen.split(" ");
   return parts[1] === "b" ? "b" : "w";
@@ -39,51 +54,60 @@ function toWhitePov(fen: string, info: AnalysisInfo): { cp?: number; mate?: numb
 
 /**
  * Run continuous analysis on `fen`, switching whenever it changes.
- * The engine itself is created lazily on first call and torn down on unmount.
+ * The engine worker is created lazily on the first enabled search and torn
+ * down on unmount. Pass `enabled: false` to pause (e.g. while the two-pass
+ * game analysis owns the CPU) — the hook then reports EMPTY and runs nothing.
  */
-export function useEngineEval(fen: string, depth = 20): EngineEval {
-  const [snapshot, setSnapshot] = useState<EngineEval>(EMPTY);
+export function useEngineEval(fen: string, depth = 20, enabled = true): EngineEval {
+  // The snapshot is tagged with the position it belongs to: a stale snapshot
+  // from the previous fen renders as EMPTY instead of lingering on the bar,
+  // without needing a reset-setState inside the effect.
+  const [snapshot, setSnapshot] = useState<{ key: string; value: EngineEval }>({
+    key: "",
+    value: EMPTY,
+  });
   const engineRef = useRef<Engine | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
 
-  // Create / destroy the engine alongside the component lifecycle.
+  // Tear the engine down with the component.
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const engine = createEngine();
-    engineRef.current = engine;
     return () => {
-      abortRef.current?.abort();
-      engine.destroy();
+      engineRef.current?.destroy();
       engineRef.current = null;
     };
   }, []);
 
+  const cacheKey = `${depth}:${fen}`;
+  const cached = enabled ? evalCache.get(cacheKey) : undefined;
+
   useEffect(() => {
+    if (!enabled || typeof window === "undefined") return;
+    // Already searched to full depth — rendered straight from the cache.
+    if (evalCache.has(`${depth}:${fen}`)) return;
+
+    if (!engineRef.current) engineRef.current = createEngine();
     const engine = engineRef.current;
-    if (!engine) return;
 
-    // Reset between positions so stale numbers don't linger on the eval bar.
-    setSnapshot(EMPTY);
-
-    // Cancel any prior analysis.
-    abortRef.current?.abort();
     const controller = new AbortController();
-    abortRef.current = controller;
-
     let alive = true;
-    const update = (info: AnalysisInfo) => {
-      if (!alive) return;
+    let last = EMPTY;
+    const toSnapshot = (info: AnalysisInfo): EngineEval => {
       const { cp, mate } = toWhitePov(fen, info);
       const hasPv = info.pv.length > 0;
-      setSnapshot((prev) => ({
-        depth: info.depth || prev.depth,
-        cp: cp ?? prev.cp,
-        mate: mate ?? prev.mate,
-        pvSan: hasPv ? uciLineToSan(fen, info.pv) : prev.pvSan,
-        bestUci: hasPv ? info.pv[0] : prev.bestUci,
-        nps: info.nps ?? prev.nps,
+      return {
+        depth: info.depth || last.depth,
+        cp: cp ?? last.cp,
+        mate: mate ?? last.mate,
+        pvSan: hasPv ? uciLineToSan(fen, info.pv) : last.pvSan,
+        bestUci: hasPv ? info.pv[0] : last.bestUci,
+        nps: info.nps ?? last.nps,
         hasResult: true,
-      }));
+      };
+    };
+    const key = `${depth}:${fen}`;
+    const update = (info: AnalysisInfo) => {
+      if (!alive) return;
+      last = toSnapshot(info);
+      setSnapshot({ key, value: last });
     };
 
     engine
@@ -92,7 +116,12 @@ export function useEngineEval(fen: string, depth = 20): EngineEval {
         signal: controller.signal,
         onProgress: update,
       })
-      .then(update)
+      .then((final) => {
+        if (!alive) return;
+        last = toSnapshot(final);
+        cachePut(key, last);
+        setSnapshot({ key, value: last });
+      })
       .catch(() => {
         // Aborts and engine teardown both land here — silently ignore.
       });
@@ -101,7 +130,7 @@ export function useEngineEval(fen: string, depth = 20): EngineEval {
       alive = false;
       controller.abort();
     };
-  }, [fen, depth]);
+  }, [fen, depth, enabled]);
 
-  return snapshot;
+  return snapshot.key === cacheKey ? snapshot.value : (cached ?? EMPTY);
 }

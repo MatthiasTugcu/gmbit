@@ -51,9 +51,3 @@ export interface Engine {
   kind: string;
   depth: number;
 }
-
-export interface Appearance {
-  mode: "dark" | "light";
-  board: "violet" | "slate" | "green" | "walnut";
-  coords: boolean;
-}
