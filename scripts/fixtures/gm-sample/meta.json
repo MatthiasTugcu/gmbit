@@ -1,0 +1,4104 @@
+{
+  "games": [
+    {
+      "name": "21983413983",
+      "whiteElo": 466,
+      "blackElo": 2730,
+      "timeControl": "30",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 70
+    },
+    {
+      "name": "1824004771",
+      "whiteElo": 1347,
+      "blackElo": 1136,
+      "timeControl": "120+1",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 53
+    },
+    {
+      "name": "18640304193",
+      "whiteElo": 1461,
+      "blackElo": 1492,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 64
+    },
+    {
+      "name": "807218094",
+      "whiteElo": 1274,
+      "blackElo": 1472,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 72
+    },
+    {
+      "name": "4438446242",
+      "whiteElo": 1426,
+      "blackElo": 1706,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 55
+    },
+    {
+      "name": "37893030273",
+      "whiteElo": 2458,
+      "blackElo": 716,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 51
+    },
+    {
+      "name": "4153467716",
+      "whiteElo": 1391,
+      "blackElo": 1472,
+      "timeControl": "120+1",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 89
+    },
+    {
+      "name": "4354882344",
+      "whiteElo": 2005,
+      "blackElo": 745,
+      "timeControl": "120+1",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 75
+    },
+    {
+      "name": "4643919197",
+      "whiteElo": 2500,
+      "blackElo": 660,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 73
+    },
+    {
+      "name": "892572223",
+      "whiteElo": 3107,
+      "blackElo": 2719,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 81
+    },
+    {
+      "name": "3929203286",
+      "whiteElo": 3214,
+      "blackElo": 3208,
+      "timeControl": "60+1",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 69
+    },
+    {
+      "name": "24690725695",
+      "whiteElo": 2511,
+      "blackElo": 2465,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 74
+    },
+    {
+      "name": "5735417377",
+      "whiteElo": 2990,
+      "blackElo": 2842,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 62
+    },
+    {
+      "name": "22501841449",
+      "whiteElo": 2793,
+      "blackElo": 2922,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 74
+    },
+    {
+      "name": "5992748757",
+      "whiteElo": 2987,
+      "blackElo": 3132,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 76
+    },
+    {
+      "name": "11414011653",
+      "whiteElo": 3304,
+      "blackElo": 3150,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 89
+    },
+    {
+      "name": "2944164058",
+      "whiteElo": 2856,
+      "blackElo": 2793,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 65
+    },
+    {
+      "name": "6088222845",
+      "whiteElo": 3034,
+      "blackElo": 2994,
+      "timeControl": "30",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 86
+    },
+    {
+      "name": "4799149434",
+      "whiteElo": 2792,
+      "blackElo": 2769,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 126
+    },
+    {
+      "name": "5878231879",
+      "whiteElo": 3287,
+      "blackElo": 3247,
+      "timeControl": "60+1",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 118
+    },
+    {
+      "name": "6024576584",
+      "whiteElo": 3014,
+      "blackElo": 2946,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 103
+    },
+    {
+      "name": "21559164559",
+      "whiteElo": 2871,
+      "blackElo": 3019,
+      "timeControl": "30",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 111
+    },
+    {
+      "name": "36966688829",
+      "whiteElo": 3078,
+      "blackElo": 2444,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 114
+    },
+    {
+      "name": "31824610717",
+      "whiteElo": 2984,
+      "blackElo": 2909,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 93
+    },
+    {
+      "name": "5234653321",
+      "whiteElo": 2932,
+      "blackElo": 3035,
+      "timeControl": "30",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 138
+    },
+    {
+      "name": "6498128882",
+      "whiteElo": 2773,
+      "blackElo": 2623,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 137
+    },
+    {
+      "name": "12804908249",
+      "whiteElo": 3107,
+      "blackElo": 3354,
+      "timeControl": "30",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 126
+    },
+    {
+      "name": "39112127023",
+      "whiteElo": 2856,
+      "blackElo": 2839,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 74
+    },
+    {
+      "name": "34614565095",
+      "whiteElo": 2771,
+      "blackElo": 2724,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 53
+    },
+    {
+      "name": "28999745757",
+      "whiteElo": 2766,
+      "blackElo": 2816,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 82
+    },
+    {
+      "name": "4565370055",
+      "whiteElo": 2839,
+      "blackElo": 2624,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 85
+    },
+    {
+      "name": "5621629517",
+      "whiteElo": 2931,
+      "blackElo": 2962,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 69
+    },
+    {
+      "name": "37649440727",
+      "whiteElo": 2617,
+      "blackElo": 2706,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 53
+    },
+    {
+      "name": "5074750887",
+      "whiteElo": 2400,
+      "blackElo": 2421,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 56
+    },
+    {
+      "name": "34882891473",
+      "whiteElo": 2746,
+      "blackElo": 1978,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 63
+    },
+    {
+      "name": "31663853521",
+      "whiteElo": 2892,
+      "blackElo": 2865,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 65
+    },
+    {
+      "name": "7786380747",
+      "whiteElo": 2972,
+      "blackElo": 2262,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 94
+    },
+    {
+      "name": "4605430678",
+      "whiteElo": 3059,
+      "blackElo": 3208,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 119
+    },
+    {
+      "name": "3885567611",
+      "whiteElo": 2670,
+      "blackElo": 2758,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 114
+    },
+    {
+      "name": "4086574931",
+      "whiteElo": 2550,
+      "blackElo": 2556,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 91
+    },
+    {
+      "name": "4822786410",
+      "whiteElo": 2939,
+      "blackElo": 2990,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 126
+    },
+    {
+      "name": "4839594001",
+      "whiteElo": 2932,
+      "blackElo": 2888,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 134
+    },
+    {
+      "name": "3990389708",
+      "whiteElo": 2871,
+      "blackElo": 2913,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 131
+    },
+    {
+      "name": "36395390255",
+      "whiteElo": 3124,
+      "blackElo": 3000,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 133
+    },
+    {
+      "name": "4567994810",
+      "whiteElo": 2762,
+      "blackElo": 2853,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 92
+    },
+    {
+      "name": "5934902571",
+      "whiteElo": 2872,
+      "blackElo": 2768,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 39
+    },
+    {
+      "name": "7516857365",
+      "whiteElo": 2900,
+      "blackElo": 2911,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 38
+    },
+    {
+      "name": "5159141484",
+      "whiteElo": 2880,
+      "blackElo": 2881,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 48
+    },
+    {
+      "name": "23134199875",
+      "whiteElo": 2629,
+      "blackElo": 2810,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 48
+    },
+    {
+      "name": "14543205871",
+      "whiteElo": 2876,
+      "blackElo": 2737,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 45
+    },
+    {
+      "name": "42463834389",
+      "whiteElo": 2762,
+      "blackElo": 2770,
+      "timeControl": "300+1",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 49
+    },
+    {
+      "name": "4963223385",
+      "whiteElo": 2748,
+      "blackElo": 2677,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 43
+    },
+    {
+      "name": "4976053283",
+      "whiteElo": 2730,
+      "blackElo": 2674,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 45
+    },
+    {
+      "name": "5241764004",
+      "whiteElo": 1650,
+      "blackElo": 2954,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 36
+    },
+    {
+      "name": "4552131358",
+      "whiteElo": 2976,
+      "blackElo": 3184,
+      "timeControl": "30",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 50
+    },
+    {
+      "name": "26756524841",
+      "whiteElo": 3111,
+      "blackElo": 3452,
+      "timeControl": "30",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 42
+    },
+    {
+      "name": "12110625431",
+      "whiteElo": 2273,
+      "blackElo": 2609,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 48
+    },
+    {
+      "name": "3543411424",
+      "whiteElo": 3112,
+      "blackElo": 3112,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 32
+    },
+    {
+      "name": "3593238852",
+      "whiteElo": 2917,
+      "blackElo": 2800,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 39
+    },
+    {
+      "name": "35041794813",
+      "whiteElo": 2807,
+      "blackElo": 2900,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 27
+    },
+    {
+      "name": "14488042881",
+      "whiteElo": 3151,
+      "blackElo": 3151,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 36
+    },
+    {
+      "name": "5566930826",
+      "whiteElo": 2846,
+      "blackElo": 2749,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 49
+    },
+    {
+      "name": "8364299187",
+      "whiteElo": 3065,
+      "blackElo": 3206,
+      "timeControl": "10",
+      "tcClass": "bullet",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 49
+    },
+    {
+      "name": "5232496458",
+      "whiteElo": 1073,
+      "blackElo": 2398,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 62
+    },
+    {
+      "name": "6347222884",
+      "whiteElo": 2364,
+      "blackElo": 1440,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 61
+    },
+    {
+      "name": "5787034900",
+      "whiteElo": 2353,
+      "blackElo": 1498,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 75
+    },
+    {
+      "name": "5780225878",
+      "whiteElo": 1389,
+      "blackElo": 2131,
+      "timeControl": "600+2",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 60
+    },
+    {
+      "name": "2714908675",
+      "whiteElo": 1828,
+      "blackElo": 1925,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 76
+    },
+    {
+      "name": "49632000323",
+      "whiteElo": 1985,
+      "blackElo": 1993,
+      "timeControl": "1200+10",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 86
+    },
+    {
+      "name": "16994686837",
+      "whiteElo": 2035,
+      "blackElo": 1941,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 59
+    },
+    {
+      "name": "46822775969",
+      "whiteElo": 1200,
+      "blackElo": 2323,
+      "timeControl": "900+5",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 60
+    },
+    {
+      "name": "5073520440",
+      "whiteElo": 1982,
+      "blackElo": 1823,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 55
+    },
+    {
+      "name": "19055203119",
+      "whiteElo": 1791,
+      "blackElo": 2159,
+      "timeControl": "900",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 100
+    },
+    {
+      "name": "5238559709",
+      "whiteElo": 1293,
+      "blackElo": 2464,
+      "timeControl": "900+5",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 130
+    },
+    {
+      "name": "2310749883",
+      "whiteElo": 1225,
+      "blackElo": 2663,
+      "timeControl": "600+2",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 101
+    },
+    {
+      "name": "6066644544",
+      "whiteElo": 2338,
+      "blackElo": 1410,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 91
+    },
+    {
+      "name": "37225288019",
+      "whiteElo": 2571,
+      "blackElo": 1063,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 105
+    },
+    {
+      "name": "16629364735",
+      "whiteElo": 888,
+      "blackElo": 2490,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 96
+    },
+    {
+      "name": "5837736863",
+      "whiteElo": 2531,
+      "blackElo": 1161,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 94
+    },
+    {
+      "name": "48761406077",
+      "whiteElo": 2056,
+      "blackElo": 1498,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 97
+    },
+    {
+      "name": "1258209281",
+      "whiteElo": 1897,
+      "blackElo": 1870,
+      "timeControl": "1800",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 91
+    },
+    {
+      "name": "2646826016",
+      "whiteElo": 2671,
+      "blackElo": 2634,
+      "timeControl": "900+2",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 53
+    },
+    {
+      "name": "5652889036",
+      "whiteElo": 2184,
+      "blackElo": 2447,
+      "timeControl": "900+5",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 52
+    },
+    {
+      "name": "34762828889",
+      "whiteElo": 2629,
+      "blackElo": 2778,
+      "timeControl": "900+5",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 60
+    },
+    {
+      "name": "3907199788",
+      "whiteElo": 1897,
+      "blackElo": 2677,
+      "timeControl": "900+2",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 76
+    },
+    {
+      "name": "5593224222",
+      "whiteElo": 2385,
+      "blackElo": 1800,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 51
+    },
+    {
+      "name": "7979593763",
+      "whiteElo": 2149,
+      "blackElo": 2016,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 87
+    },
+    {
+      "name": "26152305249",
+      "whiteElo": 1765,
+      "blackElo": 2862,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 62
+    },
+    {
+      "name": "20380272755",
+      "whiteElo": 2537,
+      "blackElo": 2288,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 55
+    },
+    {
+      "name": "3562824242",
+      "whiteElo": 2588,
+      "blackElo": 2042,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 81
+    },
+    {
+      "name": "3384211670",
+      "whiteElo": 2634,
+      "blackElo": 2654,
+      "timeControl": "900+2",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 128
+    },
+    {
+      "name": "36451250031",
+      "whiteElo": 2516,
+      "blackElo": 2281,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 139
+    },
+    {
+      "name": "14937995381",
+      "whiteElo": 2800,
+      "blackElo": 2381,
+      "timeControl": "1200+10",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 96
+    },
+    {
+      "name": "3567311587",
+      "whiteElo": 2626,
+      "blackElo": 2776,
+      "timeControl": "900+2",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 100
+    },
+    {
+      "name": "4395563300",
+      "whiteElo": 2489,
+      "blackElo": 2660,
+      "timeControl": "600+2",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 97
+    },
+    {
+      "name": "4580411547",
+      "whiteElo": 2762,
+      "blackElo": 2626,
+      "timeControl": "600+2",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 116
+    },
+    {
+      "name": "20000468889",
+      "whiteElo": 2179,
+      "blackElo": 2162,
+      "timeControl": "900",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 106
+    },
+    {
+      "name": "28072146309",
+      "whiteElo": 2333,
+      "blackElo": 2470,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 151
+    },
+    {
+      "name": "30756617263",
+      "whiteElo": 2518,
+      "blackElo": 2491,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 94
+    },
+    {
+      "name": "5690182117",
+      "whiteElo": 2295,
+      "blackElo": 2299,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 44
+    },
+    {
+      "name": "3991624879",
+      "whiteElo": 2870,
+      "blackElo": 2548,
+      "timeControl": "900+2",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 49
+    },
+    {
+      "name": "35610397421",
+      "whiteElo": 2568,
+      "blackElo": 1736,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 33
+    },
+    {
+      "name": "36629476011",
+      "whiteElo": 2535,
+      "blackElo": 2504,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 43
+    },
+    {
+      "name": "47475584991",
+      "whiteElo": 2200,
+      "blackElo": 2255,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 44
+    },
+    {
+      "name": "36375043255",
+      "whiteElo": 2307,
+      "blackElo": 1800,
+      "timeControl": "1200",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 25
+    },
+    {
+      "name": "5359763538",
+      "whiteElo": 2529,
+      "blackElo": 1727,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 49
+    },
+    {
+      "name": "42141641007",
+      "whiteElo": 2548,
+      "blackElo": 2613,
+      "timeControl": "600+2",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 48
+    },
+    {
+      "name": "2638427761",
+      "whiteElo": 2679,
+      "blackElo": 3047,
+      "timeControl": "600+2",
+      "tcClass": "rapid",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 38
+    },
+    {
+      "name": "5379996778",
+      "whiteElo": 1772,
+      "blackElo": 2145,
+      "timeControl": "300+5",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 34
+    },
+    {
+      "name": "9141371573",
+      "whiteElo": 924,
+      "blackElo": 2842,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 48
+    },
+    {
+      "name": "5276254203",
+      "whiteElo": 2643,
+      "blackElo": 1197,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 47
+    },
+    {
+      "name": "4676722827",
+      "whiteElo": 2573,
+      "blackElo": 1253,
+      "timeControl": "300+5",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 42
+    },
+    {
+      "name": "6068279153",
+      "whiteElo": 857,
+      "blackElo": 2527,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 39
+    },
+    {
+      "name": "6004308100",
+      "whiteElo": 2849,
+      "blackElo": 684,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 35
+    },
+    {
+      "name": "5470263024",
+      "whiteElo": 1307,
+      "blackElo": 2505,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 46
+    },
+    {
+      "name": "18650426883",
+      "whiteElo": 1145,
+      "blackElo": 2675,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 50
+    },
+    {
+      "name": "1766168434",
+      "whiteElo": 2670,
+      "blackElo": 826,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 37
+    },
+    {
+      "name": "6550540720",
+      "whiteElo": 2664,
+      "blackElo": 1093,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 51
+    },
+    {
+      "name": "5738360086",
+      "whiteElo": 1321,
+      "blackElo": 2477,
+      "timeControl": "300",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 58
+    },
+    {
+      "name": "10772251317",
+      "whiteElo": 906,
+      "blackElo": 2864,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 56
+    },
+    {
+      "name": "22531853187",
+      "whiteElo": 927,
+      "blackElo": 2998,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 54
+    },
+    {
+      "name": "29529629833",
+      "whiteElo": 1091,
+      "blackElo": 2706,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 54
+    },
+    {
+      "name": "32044210263",
+      "whiteElo": 945,
+      "blackElo": 2711,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 52
+    },
+    {
+      "name": "11196267457",
+      "whiteElo": 2800,
+      "blackElo": 813,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 51
+    },
+    {
+      "name": "5950342556",
+      "whiteElo": 1233,
+      "blackElo": 2566,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 52
+    },
+    {
+      "name": "13566102965",
+      "whiteElo": 2420,
+      "blackElo": 1126,
+      "timeControl": "300",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 67
+    },
+    {
+      "name": "5110898756",
+      "whiteElo": 2517,
+      "blackElo": 2408,
+      "timeControl": "3600+5",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 129
+    },
+    {
+      "name": "6084023747",
+      "whiteElo": 2599,
+      "blackElo": 2388,
+      "timeControl": "3600+5",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 91
+    },
+    {
+      "name": "21493272967",
+      "whiteElo": 2030,
+      "blackElo": 2092,
+      "timeControl": "3600+15",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 97
+    },
+    {
+      "name": "6135399302",
+      "whiteElo": 2365,
+      "blackElo": 1808,
+      "timeControl": "2700+10",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 131
+    },
+    {
+      "name": "5664365438",
+      "whiteElo": 2460,
+      "blackElo": 1653,
+      "timeControl": "3600+45",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 120
+    },
+    {
+      "name": "5847719838",
+      "whiteElo": 2314,
+      "blackElo": 1927,
+      "timeControl": "3600+5",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 103
+    },
+    {
+      "name": "6082616798",
+      "whiteElo": 2388,
+      "blackElo": 2429,
+      "timeControl": "3600+5",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 97
+    },
+    {
+      "name": "6081159300",
+      "whiteElo": 2536,
+      "blackElo": 2260,
+      "timeControl": "3600+5",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 107
+    },
+    {
+      "name": "11066014723",
+      "whiteElo": 1673,
+      "blackElo": 2609,
+      "timeControl": "3600+5",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "long",
+      "plies": 120
+    },
+    {
+      "name": "5064861628",
+      "whiteElo": 2269,
+      "blackElo": 2608,
+      "timeControl": "5400+30",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 63
+    },
+    {
+      "name": "4179039264",
+      "whiteElo": 2416,
+      "blackElo": 2322,
+      "timeControl": "3600+10",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 57
+    },
+    {
+      "name": "6073967486",
+      "whiteElo": 2497,
+      "blackElo": 2699,
+      "timeControl": "3600+5",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 60
+    },
+    {
+      "name": "4902170873",
+      "whiteElo": 2628,
+      "blackElo": 2500,
+      "timeControl": "3600+5",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 53
+    },
+    {
+      "name": "6017910992",
+      "whiteElo": 1980,
+      "blackElo": 2432,
+      "timeControl": "3600+5",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 90
+    },
+    {
+      "name": "3372433795",
+      "whiteElo": 2000,
+      "blackElo": 2534,
+      "timeControl": "3600+30",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 74
+    },
+    {
+      "name": "6082609624",
+      "whiteElo": 2523,
+      "blackElo": 2497,
+      "timeControl": "3600+5",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 80
+    },
+    {
+      "name": "5204391035",
+      "whiteElo": 1968,
+      "blackElo": 2159,
+      "timeControl": "4200+10",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 82
+    },
+    {
+      "name": "37246247825",
+      "whiteElo": 2208,
+      "blackElo": 2684,
+      "timeControl": "5400+30",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "medium",
+      "plies": 54
+    },
+    {
+      "name": "5672299360",
+      "whiteElo": 2924,
+      "blackElo": 1001,
+      "timeControl": "300",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 99
+    },
+    {
+      "name": "10030877505",
+      "whiteElo": 874,
+      "blackElo": 2588,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 138
+    },
+    {
+      "name": "6004234890",
+      "whiteElo": 684,
+      "blackElo": 2849,
+      "timeControl": "300",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 110
+    },
+    {
+      "name": "24068243907",
+      "whiteElo": 726,
+      "blackElo": 2882,
+      "timeControl": "180+2",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 102
+    },
+    {
+      "name": "14067222083",
+      "whiteElo": 2800,
+      "blackElo": 578,
+      "timeControl": "180+2",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 104
+    },
+    {
+      "name": "48207551970",
+      "whiteElo": 935,
+      "blackElo": 2704,
+      "timeControl": "180+2",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 96
+    },
+    {
+      "name": "42444542586",
+      "whiteElo": 1085,
+      "blackElo": 2754,
+      "timeControl": "180+2",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 138
+    },
+    {
+      "name": "10820796717",
+      "whiteElo": 1453,
+      "blackElo": 2486,
+      "timeControl": "180+2",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 106
+    },
+    {
+      "name": "31955470437",
+      "whiteElo": 1258,
+      "blackElo": 2712,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 94
+    },
+    {
+      "name": "5100413300",
+      "whiteElo": 2369,
+      "blackElo": 1795,
+      "timeControl": "3600+5",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 47
+    },
+    {
+      "name": "6075321802",
+      "whiteElo": 2452,
+      "blackElo": 2729,
+      "timeControl": "3600+5",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 20
+    },
+    {
+      "name": "13112635575",
+      "whiteElo": 2082,
+      "blackElo": 1919,
+      "timeControl": "2700+60",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 38
+    },
+    {
+      "name": "4906819523",
+      "whiteElo": 2375,
+      "blackElo": 2200,
+      "timeControl": "3600+5",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 50
+    },
+    {
+      "name": "5236085002",
+      "whiteElo": 1855,
+      "blackElo": 2204,
+      "timeControl": "4200+10",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 48
+    },
+    {
+      "name": "6191510961",
+      "whiteElo": 2469,
+      "blackElo": 2630,
+      "timeControl": "6660+55",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 25
+    },
+    {
+      "name": "5110096639",
+      "whiteElo": 2408,
+      "blackElo": 2080,
+      "timeControl": "3600+5",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 29
+    },
+    {
+      "name": "4902874645",
+      "whiteElo": 2375,
+      "blackElo": 2628,
+      "timeControl": "3600+5",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 46
+    },
+    {
+      "name": "10898797613",
+      "whiteElo": 2047,
+      "blackElo": 2409,
+      "timeControl": "2100+2",
+      "tcClass": "classical",
+      "ratingBand": "2000+",
+      "lengthBucket": "short",
+      "plies": 50
+    },
+    {
+      "name": "457334684",
+      "whiteElo": 1493,
+      "blackElo": 1514,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 66
+    },
+    {
+      "name": "6004791641",
+      "whiteElo": 643,
+      "blackElo": 2293,
+      "timeControl": "300+5",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 59
+    },
+    {
+      "name": "42573669867",
+      "whiteElo": 2392,
+      "blackElo": 129,
+      "timeControl": "180+2",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 51
+    },
+    {
+      "name": "4771113397",
+      "whiteElo": 2019,
+      "blackElo": 965,
+      "timeControl": "300",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 55
+    },
+    {
+      "name": "16748704409",
+      "whiteElo": 2656,
+      "blackElo": 320,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 55
+    },
+    {
+      "name": "33888589915",
+      "whiteElo": 2806,
+      "blackElo": 270,
+      "timeControl": "300",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 51
+    },
+    {
+      "name": "3599180760",
+      "whiteElo": 1550,
+      "blackElo": 1319,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 57
+    },
+    {
+      "name": "5566471377",
+      "whiteElo": 400,
+      "blackElo": 2770,
+      "timeControl": "180+2",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 66
+    },
+    {
+      "name": "3057772214",
+      "whiteElo": 1383,
+      "blackElo": 1547,
+      "timeControl": "300+2",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 89
+    },
+    {
+      "name": "4707531125",
+      "whiteElo": 1800,
+      "blackElo": 1960,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 123
+    },
+    {
+      "name": "4747785550",
+      "whiteElo": 2528,
+      "blackElo": 1466,
+      "timeControl": "5400+30",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 126
+    },
+    {
+      "name": "8797011873",
+      "whiteElo": 1788,
+      "blackElo": 1789,
+      "timeControl": "2700+60",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 136
+    },
+    {
+      "name": "21925269021",
+      "whiteElo": 2038,
+      "blackElo": 1918,
+      "timeControl": "3600+15",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 97
+    },
+    {
+      "name": "6199834862",
+      "whiteElo": 1238,
+      "blackElo": 2359,
+      "timeControl": "2700+10",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 122
+    },
+    {
+      "name": "26423486879",
+      "whiteElo": 2013,
+      "blackElo": 1248,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 96
+    },
+    {
+      "name": "37625969687",
+      "whiteElo": 2439,
+      "blackElo": 1102,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 133
+    },
+    {
+      "name": "6018139174",
+      "whiteElo": 2381,
+      "blackElo": 1578,
+      "timeControl": "2700+10",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 103
+    },
+    {
+      "name": "5664281446",
+      "whiteElo": 2460,
+      "blackElo": 1523,
+      "timeControl": "3600+45",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 139
+    },
+    {
+      "name": "18676263223",
+      "whiteElo": 3075,
+      "blackElo": 100,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 27
+    },
+    {
+      "name": "24693730549",
+      "whiteElo": 2463,
+      "blackElo": 542,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 41
+    },
+    {
+      "name": "4641300138",
+      "whiteElo": 2341,
+      "blackElo": 799,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 45
+    },
+    {
+      "name": "4195622307",
+      "whiteElo": 638,
+      "blackElo": 2452,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 28
+    },
+    {
+      "name": "34297868335",
+      "whiteElo": 2526,
+      "blackElo": 462,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 37
+    },
+    {
+      "name": "4740973234",
+      "whiteElo": 2488,
+      "blackElo": 644,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 33
+    },
+    {
+      "name": "1857311358",
+      "whiteElo": 2670,
+      "blackElo": 137,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 25
+    },
+    {
+      "name": "6522680957",
+      "whiteElo": 2305,
+      "blackElo": 886,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 33
+    },
+    {
+      "name": "6537556991",
+      "whiteElo": 400,
+      "blackElo": 2608,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 34
+    },
+    {
+      "name": "8796976673",
+      "whiteElo": 1640,
+      "blackElo": 1914,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 82
+    },
+    {
+      "name": "36102500563",
+      "whiteElo": 1460,
+      "blackElo": 1990,
+      "timeControl": "3600+60",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 65
+    },
+    {
+      "name": "39817787743",
+      "whiteElo": 2064,
+      "blackElo": 1506,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 78
+    },
+    {
+      "name": "4879058689",
+      "whiteElo": 1225,
+      "blackElo": 2154,
+      "timeControl": "2400+30",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 84
+    },
+    {
+      "name": "24608513611",
+      "whiteElo": 1716,
+      "blackElo": 2080,
+      "timeControl": "3600+60",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 76
+    },
+    {
+      "name": "4707498851",
+      "whiteElo": 1800,
+      "blackElo": 1606,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 84
+    },
+    {
+      "name": "5664285846",
+      "whiteElo": 2460,
+      "blackElo": 1490,
+      "timeControl": "3600+45",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 79
+    },
+    {
+      "name": "15539033115",
+      "whiteElo": 1471,
+      "blackElo": 1979,
+      "timeControl": "2700+60",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 53
+    },
+    {
+      "name": "4761016742",
+      "whiteElo": 2000,
+      "blackElo": 1966,
+      "timeControl": "5400+30",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 84
+    },
+    {
+      "name": "4032984944",
+      "whiteElo": 1877,
+      "blackElo": 1999,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 42
+    },
+    {
+      "name": "5138666034",
+      "whiteElo": 2435,
+      "blackElo": 816,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 49
+    },
+    {
+      "name": "12386812231",
+      "whiteElo": 957,
+      "blackElo": 2695,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 45
+    },
+    {
+      "name": "6375123856",
+      "whiteElo": 1746,
+      "blackElo": 1769,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 24
+    },
+    {
+      "name": "35850636177",
+      "whiteElo": 2578,
+      "blackElo": 844,
+      "timeControl": "1200",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 47
+    },
+    {
+      "name": "993690049",
+      "whiteElo": 1686,
+      "blackElo": 1731,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 36
+    },
+    {
+      "name": "5720690562",
+      "whiteElo": 1953,
+      "blackElo": 1898,
+      "timeControl": "600+5",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 48
+    },
+    {
+      "name": "4712961259",
+      "whiteElo": 1321,
+      "blackElo": 2636,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 36
+    },
+    {
+      "name": "4932374021",
+      "whiteElo": 2528,
+      "blackElo": 1200,
+      "timeControl": "1500+10",
+      "tcClass": "rapid",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 26
+    },
+    {
+      "name": "16223173517",
+      "whiteElo": 400,
+      "blackElo": 2639,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 70
+    },
+    {
+      "name": "9182224023",
+      "whiteElo": 763,
+      "blackElo": 2065,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 64
+    },
+    {
+      "name": "30651053287",
+      "whiteElo": 2103,
+      "blackElo": 875,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 54
+    },
+    {
+      "name": "4632187166",
+      "whiteElo": 1897,
+      "blackElo": 800,
+      "timeControl": "1800",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 75
+    },
+    {
+      "name": "2885218190",
+      "whiteElo": 791,
+      "blackElo": 2017,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 80
+    },
+    {
+      "name": "4830765401",
+      "whiteElo": 800,
+      "blackElo": 1982,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 78
+    },
+    {
+      "name": "4783374506",
+      "whiteElo": 1897,
+      "blackElo": 800,
+      "timeControl": "1800",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 79
+    },
+    {
+      "name": "13442634957",
+      "whiteElo": 1894,
+      "blackElo": 923,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 59
+    },
+    {
+      "name": "36437480769",
+      "whiteElo": 722,
+      "blackElo": 2298,
+      "timeControl": "1200",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 60
+    },
+    {
+      "name": "6481387338",
+      "whiteElo": 2659,
+      "blackElo": 433,
+      "timeControl": "300",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 41
+    },
+    {
+      "name": "4865227279",
+      "whiteElo": 1921,
+      "blackElo": 1006,
+      "timeControl": "300+5",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 27
+    },
+    {
+      "name": "5710514291",
+      "whiteElo": 2454,
+      "blackElo": 735,
+      "timeControl": "300",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 25
+    },
+    {
+      "name": "5227485911",
+      "whiteElo": 1340,
+      "blackElo": 1326,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 36
+    },
+    {
+      "name": "7692168673",
+      "whiteElo": 593,
+      "blackElo": 2544,
+      "timeControl": "300",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 20
+    },
+    {
+      "name": "6376304305",
+      "whiteElo": 2676,
+      "blackElo": 400,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 41
+    },
+    {
+      "name": "6376238344",
+      "whiteElo": 400,
+      "blackElo": 2676,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 36
+    },
+    {
+      "name": "8309051007",
+      "whiteElo": 2582,
+      "blackElo": 611,
+      "timeControl": "300",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 49
+    },
+    {
+      "name": "5583869265",
+      "whiteElo": 2492,
+      "blackElo": 542,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 45
+    },
+    {
+      "name": "4981496374",
+      "whiteElo": 980,
+      "blackElo": 2584,
+      "timeControl": "120+1",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 46
+    },
+    {
+      "name": "47783422193",
+      "whiteElo": 874,
+      "blackElo": 2935,
+      "timeControl": "30",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 34
+    },
+    {
+      "name": "4866991403",
+      "whiteElo": 2411,
+      "blackElo": 1033,
+      "timeControl": "10",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 23
+    },
+    {
+      "name": "24435708601",
+      "whiteElo": 1443,
+      "blackElo": 2455,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 44
+    },
+    {
+      "name": "5651429606",
+      "whiteElo": 800,
+      "blackElo": 2863,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 44
+    },
+    {
+      "name": "32077833051",
+      "whiteElo": 3064,
+      "blackElo": 729,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 33
+    },
+    {
+      "name": "34663206487",
+      "whiteElo": 723,
+      "blackElo": 3121,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 40
+    },
+    {
+      "name": "46925411323",
+      "whiteElo": 3083,
+      "blackElo": 742,
+      "timeControl": "10",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 27
+    },
+    {
+      "name": "12323150753",
+      "whiteElo": 1176,
+      "blackElo": 2766,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 32
+    },
+    {
+      "name": "3934295274",
+      "whiteElo": 2444,
+      "blackElo": 1141,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 86
+    },
+    {
+      "name": "15447180523",
+      "whiteElo": 1000,
+      "blackElo": 2842,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 52
+    },
+    {
+      "name": "18446500215",
+      "whiteElo": 2358,
+      "blackElo": 1277,
+      "timeControl": "120+1",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 61
+    },
+    {
+      "name": "4292896346",
+      "whiteElo": 1863,
+      "blackElo": 1688,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 61
+    },
+    {
+      "name": "4462457289",
+      "whiteElo": 627,
+      "blackElo": 2865,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 88
+    },
+    {
+      "name": "28336195547",
+      "whiteElo": 2363,
+      "blackElo": 1172,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 73
+    },
+    {
+      "name": "5850927214",
+      "whiteElo": 2656,
+      "blackElo": 1104,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 79
+    },
+    {
+      "name": "4696745788",
+      "whiteElo": 777,
+      "blackElo": 2523,
+      "timeControl": "10",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 70
+    },
+    {
+      "name": "3056019349",
+      "whiteElo": 2351,
+      "blackElo": 1246,
+      "timeControl": "49",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "medium",
+      "plies": 63
+    },
+    {
+      "name": "5227192428",
+      "whiteElo": 1047,
+      "blackElo": 1122,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 42
+    },
+    {
+      "name": "22696797493",
+      "whiteElo": 928,
+      "blackElo": 808,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 47
+    },
+    {
+      "name": "4679438047",
+      "whiteElo": 1896,
+      "blackElo": 474,
+      "timeControl": "300+5",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 43
+    },
+    {
+      "name": "11380370871",
+      "whiteElo": 1156,
+      "blackElo": 1053,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 45
+    },
+    {
+      "name": "6238312414",
+      "whiteElo": 1096,
+      "blackElo": 1060,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 43
+    },
+    {
+      "name": "5227297894",
+      "whiteElo": 1183,
+      "blackElo": 1170,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 39
+    },
+    {
+      "name": "5770937372",
+      "whiteElo": 1016,
+      "blackElo": 1000,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 28
+    },
+    {
+      "name": "5218987357",
+      "whiteElo": 707,
+      "blackElo": 1005,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 38
+    },
+    {
+      "name": "5771027553",
+      "whiteElo": 1023,
+      "blackElo": 1040,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 44
+    },
+    {
+      "name": "6194860200",
+      "whiteElo": 2876,
+      "blackElo": 400,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 155
+    },
+    {
+      "name": "3056067513",
+      "whiteElo": 1131,
+      "blackElo": 2361,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 132
+    },
+    {
+      "name": "8955505763",
+      "whiteElo": 2573,
+      "blackElo": 1200,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 120
+    },
+    {
+      "name": "37284089133",
+      "whiteElo": 2209,
+      "blackElo": 1608,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 142
+    },
+    {
+      "name": "4866050905",
+      "whiteElo": 1766,
+      "blackElo": 1733,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 122
+    },
+    {
+      "name": "26848310915",
+      "whiteElo": 1359,
+      "blackElo": 2377,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 96
+    },
+    {
+      "name": "5124525654",
+      "whiteElo": 2314,
+      "blackElo": 1519,
+      "timeControl": "120+1",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 93
+    },
+    {
+      "name": "4900634623",
+      "whiteElo": 1359,
+      "blackElo": 2485,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 104
+    },
+    {
+      "name": "46618188506",
+      "whiteElo": 2629,
+      "blackElo": 1126,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "long",
+      "plies": 96
+    },
+    {
+      "name": "4088740131",
+      "whiteElo": 1583,
+      "blackElo": 1531,
+      "timeControl": "1800",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 128
+    },
+    {
+      "name": "5798605171",
+      "whiteElo": 1050,
+      "blackElo": 2121,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 95
+    },
+    {
+      "name": "4789362862",
+      "whiteElo": 1395,
+      "blackElo": 1514,
+      "timeControl": "600+5",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 108
+    },
+    {
+      "name": "40065680683",
+      "whiteElo": 1195,
+      "blackElo": 1223,
+      "timeControl": "1800+30",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 106
+    },
+    {
+      "name": "42856144553",
+      "whiteElo": 696,
+      "blackElo": 2415,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 102
+    },
+    {
+      "name": "4848231425",
+      "whiteElo": 1523,
+      "blackElo": 1249,
+      "timeControl": "600+5",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 92
+    },
+    {
+      "name": "32401742995",
+      "whiteElo": 928,
+      "blackElo": 1497,
+      "timeControl": "1500+10",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 124
+    },
+    {
+      "name": "5029488574",
+      "whiteElo": 2253,
+      "blackElo": 895,
+      "timeControl": "600+5",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 92
+    },
+    {
+      "name": "32401795843",
+      "whiteElo": 1522,
+      "blackElo": 1445,
+      "timeControl": "1500+10",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 131
+    },
+    {
+      "name": "5081446252",
+      "whiteElo": 2540,
+      "blackElo": 619,
+      "timeControl": "1800",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 43
+    },
+    {
+      "name": "9857464799",
+      "whiteElo": 1464,
+      "blackElo": 1526,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 46
+    },
+    {
+      "name": "45420689323",
+      "whiteElo": 1047,
+      "blackElo": 2105,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 28
+    },
+    {
+      "name": "5125081481",
+      "whiteElo": 1399,
+      "blackElo": 1799,
+      "timeControl": "1800",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 45
+    },
+    {
+      "name": "4574953105",
+      "whiteElo": 878,
+      "blackElo": 2148,
+      "timeControl": "600+5",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 48
+    },
+    {
+      "name": "3933489928",
+      "whiteElo": 1522,
+      "blackElo": 1522,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 45
+    },
+    {
+      "name": "305924710",
+      "whiteElo": 1642,
+      "blackElo": 1459,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 35
+    },
+    {
+      "name": "5061329000",
+      "whiteElo": 2704,
+      "blackElo": 400,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 20
+    },
+    {
+      "name": "12419295693",
+      "whiteElo": 462,
+      "blackElo": 2502,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 44
+    },
+    {
+      "name": "12407285243",
+      "whiteElo": 788,
+      "blackElo": 1408,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 60
+    },
+    {
+      "name": "43719328967",
+      "whiteElo": 729,
+      "blackElo": 814,
+      "timeControl": "900+2",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 60
+    },
+    {
+      "name": "5795704003",
+      "whiteElo": 1200,
+      "blackElo": 800,
+      "timeControl": "600+5",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 65
+    },
+    {
+      "name": "19771308247",
+      "whiteElo": 871,
+      "blackElo": 864,
+      "timeControl": "900+2",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 74
+    },
+    {
+      "name": "17148233007",
+      "whiteElo": 940,
+      "blackElo": 933,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 59
+    },
+    {
+      "name": "32401788711",
+      "whiteElo": 624,
+      "blackElo": 1492,
+      "timeControl": "1500+10",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 66
+    },
+    {
+      "name": "11559822259",
+      "whiteElo": 978,
+      "blackElo": 1200,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 54
+    },
+    {
+      "name": "26875207861",
+      "whiteElo": 912,
+      "blackElo": 677,
+      "timeControl": "1800",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 57
+    },
+    {
+      "name": "12677940719",
+      "whiteElo": 968,
+      "blackElo": 994,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 72
+    },
+    {
+      "name": "24611488209",
+      "whiteElo": 1766,
+      "blackElo": 2057,
+      "timeControl": "2460",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 36
+    },
+    {
+      "name": "36101362757",
+      "whiteElo": 1701,
+      "blackElo": 1990,
+      "timeControl": "3600+60",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 38
+    },
+    {
+      "name": "4924129040",
+      "whiteElo": 2303,
+      "blackElo": 999,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 35
+    },
+    {
+      "name": "9404671785",
+      "whiteElo": 1471,
+      "blackElo": 1803,
+      "timeControl": "2700+60",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 48
+    },
+    {
+      "name": "33079758953",
+      "whiteElo": 1626,
+      "blackElo": 2009,
+      "timeControl": "3600+60",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 42
+    },
+    {
+      "name": "3138086508",
+      "whiteElo": 2675,
+      "blackElo": 1078,
+      "timeControl": "5400",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 41
+    },
+    {
+      "name": "4379050014",
+      "whiteElo": 2603,
+      "blackElo": 1037,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 27
+    },
+    {
+      "name": "5061203846",
+      "whiteElo": 2222,
+      "blackElo": 1525,
+      "timeControl": "2700+10",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 34
+    },
+    {
+      "name": "4769964099",
+      "whiteElo": 2106,
+      "blackElo": 1778,
+      "timeControl": "5400+30",
+      "tcClass": "classical",
+      "ratingBand": "1600-2000",
+      "lengthBucket": "short",
+      "plies": 45
+    },
+    {
+      "name": "4982503050",
+      "whiteElo": 1427,
+      "blackElo": 1489,
+      "timeControl": "540+2",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 155
+    },
+    {
+      "name": "9545185813",
+      "whiteElo": 1469,
+      "blackElo": 1485,
+      "timeControl": "300",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 130
+    },
+    {
+      "name": "6337296353",
+      "whiteElo": 236,
+      "blackElo": 2941,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 96
+    },
+    {
+      "name": "3685511522",
+      "whiteElo": 1834,
+      "blackElo": 1329,
+      "timeControl": "180+3",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 103
+    },
+    {
+      "name": "5786764822",
+      "whiteElo": 1312,
+      "blackElo": 1833,
+      "timeControl": "180+2",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 128
+    },
+    {
+      "name": "5036430121",
+      "whiteElo": 1577,
+      "blackElo": 1569,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 115
+    },
+    {
+      "name": "4726701685",
+      "whiteElo": 1343,
+      "blackElo": 1761,
+      "timeControl": "300+5",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 135
+    },
+    {
+      "name": "40433474983",
+      "whiteElo": 1138,
+      "blackElo": 1547,
+      "timeControl": "180+2",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 96
+    },
+    {
+      "name": "9587211201",
+      "whiteElo": 2721,
+      "blackElo": 457,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 95
+    },
+    {
+      "name": "5893608437",
+      "whiteElo": 1210,
+      "blackElo": 883,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 60
+    },
+    {
+      "name": "6417816490",
+      "whiteElo": 800,
+      "blackElo": 1594,
+      "timeControl": "7200",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 74
+    },
+    {
+      "name": "5893608429",
+      "whiteElo": 1023,
+      "blackElo": 975,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 62
+    },
+    {
+      "name": "5893693019",
+      "whiteElo": 1312,
+      "blackElo": 1085,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 56
+    },
+    {
+      "name": "6417819051",
+      "whiteElo": 807,
+      "blackElo": 1443,
+      "timeControl": "7200",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 66
+    },
+    {
+      "name": "5954360181",
+      "whiteElo": 774,
+      "blackElo": 762,
+      "timeControl": "3600+15",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 61
+    },
+    {
+      "name": "28241353815",
+      "whiteElo": 1973,
+      "blackElo": 400,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 85
+    },
+    {
+      "name": "23402387449",
+      "whiteElo": 813,
+      "blackElo": 830,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 71
+    },
+    {
+      "name": "5954284488",
+      "whiteElo": 662,
+      "blackElo": 1028,
+      "timeControl": "3600+15",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 59
+    },
+    {
+      "name": "17955724161",
+      "whiteElo": 1200,
+      "blackElo": 1980,
+      "timeControl": "3600+60",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 73
+    },
+    {
+      "name": "14236402367",
+      "whiteElo": 1988,
+      "blackElo": 1200,
+      "timeControl": "2700+60",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 62
+    },
+    {
+      "name": "39817804507",
+      "whiteElo": 502,
+      "blackElo": 2064,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 64
+    },
+    {
+      "name": "16143268993",
+      "whiteElo": 1979,
+      "blackElo": 1200,
+      "timeControl": "2700+60",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 54
+    },
+    {
+      "name": "13113097709",
+      "whiteElo": 1200,
+      "blackElo": 1985,
+      "timeControl": "2700+60",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 89
+    },
+    {
+      "name": "22188658015",
+      "whiteElo": 2015,
+      "blackElo": 783,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 71
+    },
+    {
+      "name": "4015991252",
+      "whiteElo": 1663,
+      "blackElo": 1527,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 59
+    },
+    {
+      "name": "4765136024",
+      "whiteElo": 2151,
+      "blackElo": 965,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 73
+    },
+    {
+      "name": "19166779799",
+      "whiteElo": 1011,
+      "blackElo": 2001,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "medium",
+      "plies": 66
+    },
+    {
+      "name": "5893709279",
+      "whiteElo": 1131,
+      "blackElo": 1052,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 38
+    },
+    {
+      "name": "5893897355",
+      "whiteElo": 1194,
+      "blackElo": 1076,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 40
+    },
+    {
+      "name": "6417830329",
+      "whiteElo": 679,
+      "blackElo": 1529,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 44
+    },
+    {
+      "name": "20567351661",
+      "whiteElo": 848,
+      "blackElo": 952,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 26
+    },
+    {
+      "name": "30854313181",
+      "whiteElo": 942,
+      "blackElo": 859,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 44
+    },
+    {
+      "name": "38634815161",
+      "whiteElo": 816,
+      "blackElo": 904,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 28
+    },
+    {
+      "name": "43039181465",
+      "whiteElo": 838,
+      "blackElo": 826,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 37
+    },
+    {
+      "name": "9403583689",
+      "whiteElo": 1792,
+      "blackElo": 599,
+      "timeControl": "2700+60",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 37
+    },
+    {
+      "name": "5500730374",
+      "whiteElo": 1366,
+      "blackElo": 619,
+      "timeControl": "2700+5",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 44
+    },
+    {
+      "name": "12564483309",
+      "whiteElo": 943,
+      "blackElo": 947,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "long",
+      "plies": 92
+    },
+    {
+      "name": "23587193629",
+      "whiteElo": 737,
+      "blackElo": 847,
+      "timeControl": "900+2",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "long",
+      "plies": 124
+    },
+    {
+      "name": "4667643300",
+      "whiteElo": 1223,
+      "blackElo": 619,
+      "timeControl": "900",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "long",
+      "plies": 113
+    },
+    {
+      "name": "4667550379",
+      "whiteElo": 1223,
+      "blackElo": 619,
+      "timeControl": "900",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "long",
+      "plies": 115
+    },
+    {
+      "name": "16139089235",
+      "whiteElo": 799,
+      "blackElo": 854,
+      "timeControl": "900+2",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "long",
+      "plies": 115
+    },
+    {
+      "name": "14076804281",
+      "whiteElo": 886,
+      "blackElo": 799,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "long",
+      "plies": 96
+    },
+    {
+      "name": "5878382396",
+      "whiteElo": 1053,
+      "blackElo": 1011,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "long",
+      "plies": 115
+    },
+    {
+      "name": "10737461505",
+      "whiteElo": 961,
+      "blackElo": 993,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "long",
+      "plies": 97
+    },
+    {
+      "name": "914530726",
+      "whiteElo": 577,
+      "blackElo": 1768,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "long",
+      "plies": 159
+    },
+    {
+      "name": "17956881585",
+      "whiteElo": 1011,
+      "blackElo": 1987,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 92
+    },
+    {
+      "name": "37842015129",
+      "whiteElo": 2064,
+      "blackElo": 964,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 91
+    },
+    {
+      "name": "5901365352",
+      "whiteElo": 1822,
+      "blackElo": 1326,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 123
+    },
+    {
+      "name": "5893728228",
+      "whiteElo": 1323,
+      "blackElo": 1289,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 97
+    },
+    {
+      "name": "4894216316",
+      "whiteElo": 2036,
+      "blackElo": 848,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 97
+    },
+    {
+      "name": "4894205855",
+      "whiteElo": 1083,
+      "blackElo": 2036,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 92
+    },
+    {
+      "name": "37395725173",
+      "whiteElo": 1049,
+      "blackElo": 2064,
+      "timeControl": "5400",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 142
+    },
+    {
+      "name": "4707499824",
+      "whiteElo": 1800,
+      "blackElo": 1355,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 93
+    },
+    {
+      "name": "42234636657",
+      "whiteElo": 300,
+      "blackElo": 2463,
+      "timeControl": "3600+60",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 106
+    },
+    {
+      "name": "6224499212",
+      "whiteElo": 1143,
+      "blackElo": 1163,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 26
+    },
+    {
+      "name": "6277278972",
+      "whiteElo": 1099,
+      "blackElo": 473,
+      "timeControl": "900",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 46
+    },
+    {
+      "name": "10886255457",
+      "whiteElo": 907,
+      "blackElo": 465,
+      "timeControl": "900",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 23
+    },
+    {
+      "name": "14892456237",
+      "whiteElo": 980,
+      "blackElo": 994,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 50
+    },
+    {
+      "name": "48469759621",
+      "whiteElo": 796,
+      "blackElo": 814,
+      "timeControl": "900+2",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 41
+    },
+    {
+      "name": "5148014281",
+      "whiteElo": 568,
+      "blackElo": 1266,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 46
+    },
+    {
+      "name": "32923766063",
+      "whiteElo": 946,
+      "blackElo": 835,
+      "timeControl": "900+10",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 46
+    },
+    {
+      "name": "18601854685",
+      "whiteElo": 970,
+      "blackElo": 966,
+      "timeControl": "600",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 21
+    },
+    {
+      "name": "4745065037",
+      "whiteElo": 1407,
+      "blackElo": 910,
+      "timeControl": "600+5",
+      "tcClass": "rapid",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 43
+    },
+    {
+      "name": "8174731151",
+      "whiteElo": 308,
+      "blackElo": 1401,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 43
+    },
+    {
+      "name": "254047736",
+      "whiteElo": 1060,
+      "blackElo": 1323,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 48
+    },
+    {
+      "name": "10608074",
+      "whiteElo": 1159,
+      "blackElo": 1197,
+      "timeControl": "60+5",
+      "tcClass": "bullet",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 46
+    },
+    {
+      "name": "10608739",
+      "whiteElo": 1197,
+      "blackElo": 597,
+      "timeControl": "120+12",
+      "tcClass": "bullet",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 41
+    },
+    {
+      "name": "9283579317",
+      "whiteElo": 985,
+      "blackElo": 873,
+      "timeControl": "30",
+      "tcClass": "bullet",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 23
+    },
+    {
+      "name": "9283526679",
+      "whiteElo": 1208,
+      "blackElo": 931,
+      "timeControl": "30",
+      "tcClass": "bullet",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 20
+    },
+    {
+      "name": "9282252517",
+      "whiteElo": 739,
+      "blackElo": 599,
+      "timeControl": "30",
+      "tcClass": "bullet",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 22
+    },
+    {
+      "name": "6194495165",
+      "whiteElo": 1762,
+      "blackElo": 511,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 45
+    },
+    {
+      "name": "5359135632",
+      "whiteElo": 961,
+      "blackElo": 1160,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "<1200",
+      "lengthBucket": "short",
+      "plies": 38
+    },
+    {
+      "name": "5954341326",
+      "whiteElo": 774,
+      "blackElo": 329,
+      "timeControl": "3600+15",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "long",
+      "plies": 115
+    },
+    {
+      "name": "6417829383",
+      "whiteElo": 399,
+      "blackElo": 1594,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "long",
+      "plies": 116
+    },
+    {
+      "name": "28350012203",
+      "whiteElo": 749,
+      "blackElo": 926,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "<1200",
+      "lengthBucket": "long",
+      "plies": 135
+    },
+    {
+      "name": "4826842603",
+      "whiteElo": 2007,
+      "blackElo": 756,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 35
+    },
+    {
+      "name": "4855289623",
+      "whiteElo": 1972,
+      "blackElo": 1000,
+      "timeControl": "2700+30",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 46
+    },
+    {
+      "name": "8192123459",
+      "whiteElo": 1200,
+      "blackElo": 1614,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 39
+    },
+    {
+      "name": "37920053433",
+      "whiteElo": 1990,
+      "blackElo": 700,
+      "timeControl": "3600",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 37
+    },
+    {
+      "name": "19233970899",
+      "whiteElo": 2494,
+      "blackElo": 616,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 47
+    },
+    {
+      "name": "37314130555",
+      "whiteElo": 1990,
+      "blackElo": 1200,
+      "timeControl": "3600+60",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 49
+    },
+    {
+      "name": "37395076899",
+      "whiteElo": 2064,
+      "blackElo": 1108,
+      "timeControl": "5400",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 47
+    },
+    {
+      "name": "8191555757",
+      "whiteElo": 1200,
+      "blackElo": 1460,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 43
+    },
+    {
+      "name": "27028229799",
+      "whiteElo": 1986,
+      "blackElo": 1211,
+      "timeControl": "2700+45",
+      "tcClass": "classical",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "short",
+      "plies": 29
+    },
+    {
+      "name": "5255301193",
+      "whiteElo": 1837,
+      "blackElo": 1163,
+      "timeControl": "60+60",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 128
+    },
+    {
+      "name": "5301802429",
+      "whiteElo": 1837,
+      "blackElo": 1163,
+      "timeControl": "60+20",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 91
+    },
+    {
+      "name": "5301887836",
+      "whiteElo": 1163,
+      "blackElo": 1837,
+      "timeControl": "60+20",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 92
+    },
+    {
+      "name": "4937537460",
+      "whiteElo": 1016,
+      "blackElo": 2171,
+      "timeControl": "120+1",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 102
+    },
+    {
+      "name": "4126424814",
+      "whiteElo": 1441,
+      "blackElo": 1546,
+      "timeControl": "120+1",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 142
+    },
+    {
+      "name": "360771403",
+      "whiteElo": 1367,
+      "blackElo": 1219,
+      "timeControl": "120+1",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 105
+    },
+    {
+      "name": "4133744283",
+      "whiteElo": 420,
+      "blackElo": 2401,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 123
+    },
+    {
+      "name": "786955212",
+      "whiteElo": 1379,
+      "blackElo": 1486,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 100
+    },
+    {
+      "name": "36441016163",
+      "whiteElo": 2662,
+      "blackElo": 504,
+      "timeControl": "120+1",
+      "tcClass": "bullet",
+      "ratingBand": "1200-1600",
+      "lengthBucket": "long",
+      "plies": 131
+    },
+    {
+      "name": "5771664589",
+      "whiteElo": 1200,
+      "blackElo": 1191,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 53
+    },
+    {
+      "name": "5226960394",
+      "whiteElo": 990,
+      "blackElo": 1010,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 64
+    },
+    {
+      "name": "5226522753",
+      "whiteElo": 1295,
+      "blackElo": 951,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 63
+    },
+    {
+      "name": "5227002462",
+      "whiteElo": 1030,
+      "blackElo": 977,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 51
+    },
+    {
+      "name": "5218923521",
+      "whiteElo": 922,
+      "blackElo": 851,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 65
+    },
+    {
+      "name": "5770966920",
+      "whiteElo": 1024,
+      "blackElo": 1017,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 55
+    },
+    {
+      "name": "5227118195",
+      "whiteElo": 1097,
+      "blackElo": 1089,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 62
+    },
+    {
+      "name": "5771178493",
+      "whiteElo": 1043,
+      "blackElo": 1080,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 64
+    },
+    {
+      "name": "5771230048",
+      "whiteElo": 1088,
+      "blackElo": 1081,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 53
+    },
+    {
+      "name": "8173442067",
+      "whiteElo": 1026,
+      "blackElo": 185,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 64
+    },
+    {
+      "name": "8174081341",
+      "whiteElo": 216,
+      "blackElo": 769,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 55
+    },
+    {
+      "name": "8175211875",
+      "whiteElo": 1650,
+      "blackElo": 324,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 64
+    },
+    {
+      "name": "9281140199",
+      "whiteElo": 691,
+      "blackElo": 447,
+      "timeControl": "30",
+      "tcClass": "bullet",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 68
+    },
+    {
+      "name": "2448540840",
+      "whiteElo": 679,
+      "blackElo": 929,
+      "timeControl": "120+1",
+      "tcClass": "bullet",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 60
+    },
+    {
+      "name": "5688265732",
+      "whiteElo": 1469,
+      "blackElo": 800,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 70
+    },
+    {
+      "name": "6184514977",
+      "whiteElo": 1151,
+      "blackElo": 1041,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "<1200",
+      "lengthBucket": "medium",
+      "plies": 71
+    },
+    {
+      "name": "8175808847",
+      "whiteElo": 1964,
+      "blackElo": 356,
+      "timeControl": "60",
+      "tcClass": "bullet",
+      "ratingBand": "<1200",
+      "lengthBucket": "long",
+      "plies": 122
+    },
+    {
+      "name": "5771140165",
+      "whiteElo": 1073,
+      "blackElo": 1072,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "long",
+      "plies": 98
+    },
+    {
+      "name": "5771502285",
+      "whiteElo": 1147,
+      "blackElo": 1161,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "long",
+      "plies": 112
+    },
+    {
+      "name": "5226678103",
+      "whiteElo": 1108,
+      "blackElo": 1287,
+      "timeControl": "180",
+      "tcClass": "blitz",
+      "ratingBand": "<1200",
+      "lengthBucket": "long",
+      "plies": 101
+    }
+  ]
+}

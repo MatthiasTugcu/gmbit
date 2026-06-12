@@ -273,43 +273,39 @@ describe("classifyMove ladder", () => {
   });
 });
 
-function entries(pattern: [color: "w" | "b", acc: number, isBook?: boolean][]): MoveAccEntry[] {
-  return pattern.map(([color, acc, isBook]) => ({ color, acc, isBook: isBook ?? false }));
+function entries(pattern: [color: "w" | "b", acc: number, excluded?: boolean][]): MoveAccEntry[] {
+  return pattern.map(([color, acc, excluded]) => ({ color, acc, excluded: excluded ?? false }));
 }
 
 describe("gameAccuracy", () => {
   it("perfect play is 100 for both sides", () => {
     const e = entries([["w", 100], ["b", 100], ["w", 100], ["b", 100]]);
-    const flat = [50, 50, 50, 50, 50];
-    expect(gameAccuracy(e, flat)).toEqual({ white: 100, black: 100 });
+    expect(gameAccuracy(e)).toEqual({ white: 100, black: 100 });
   });
 
   it("book moves are excluded entirely", () => {
     // White: two book moves (acc irrelevant) + one 80-acc move -> only the 80 counts.
     const e = entries([["w", 0, true], ["b", 100], ["w", 0, true], ["b", 100], ["w", 80]]);
-    const flat = [50, 50, 50, 50, 50, 50];
-    expect(gameAccuracy(e, flat).white).toBe(80);
+    expect(gameAccuracy(e).white).toBe(80);
   });
 
   it("harmonic mean drags the score toward blunders more than a plain average", () => {
     const e = entries([["w", 100], ["w", 100], ["w", 100], ["w", 20]]);
-    const flat = [50, 50, 50, 50, 50];
-    const { white } = gameAccuracy(e, flat);
+    const { white } = gameAccuracy(e);
     expect(white).toBeLessThan(80); // plain average
     expect(white).toBeGreaterThan(20);
   });
 
-  it("returns 0 for a side with no countable moves", () => {
-    const e = entries([["w", 100]]);
-    expect(gameAccuracy(e, [50, 50]).black).toBe(0);
+  it("floors blunders so one catastrophe can't crater the game score", () => {
+    // acc 0 and acc 25 games score identically: the harmonic term is floored.
+    const zero = entries([["w", 100], ["w", 100], ["w", 100], ["w", 0]]);
+    const floored = entries([["w", 100], ["w", 100], ["w", 100], ["w", 25]]);
+    expect(gameAccuracy(zero).white).toBe(gameAccuracy(floored).white);
+    expect(gameAccuracy(zero).white).toBeGreaterThan(50);
   });
 
-  it("weights volatile phases more", () => {
-    // Same per-move accuracies; the 60-acc move sits in a volatile window for
-    // `swingy` and a calm window for `calm` -> swingy scores lower for white.
-    const e = entries([["w", 100], ["b", 100], ["w", 60], ["b", 100], ["w", 100], ["b", 100]]);
-    const calm = [50, 50, 50, 50, 50, 50, 50];
-    const swingy = [50, 50, 90, 30, 50, 50, 50];
-    expect(gameAccuracy(e, swingy).white).toBeLessThan(gameAccuracy(e, calm).white);
+  it("returns 0 for a side with no countable moves", () => {
+    const e = entries([["w", 100]]);
+    expect(gameAccuracy(e).black).toBe(0);
   });
 });

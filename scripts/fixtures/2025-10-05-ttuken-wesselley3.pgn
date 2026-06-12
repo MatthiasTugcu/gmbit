@@ -1,0 +1,18 @@
+[Event "Live Chess"]
+[Site "Chess.com"]
+[Date "2025.10.05"]
+[Round "?"]
+[White "TTuken"]
+[Black "Wesselley3"]
+[Result "1-0"]
+[WhiteElo "896"]
+[BlackElo "895"]
+[ECO "B00"]
+[Termination "TTuken won by checkmate"]
+[TimeControl "180"]
+
+1. e4 b6 2. Nf3 Bb7 3. Bc4 Bxe4 $6 4. Qe2 $2 Bb7 5. d4 e6 6. d5 Ne7 $2 7. Bg5 $2 f6 $6
+8. Bh4 $2 g5 9. Bg3 $6 Bg7 10. O-O O-O 11. c3 exd5 $6 12. Bb5 c6 $2 13. Bd3 c5 14.
+c4 $6 dxc4 15. Bxc4+ Kh8 16. Re1 Nf5 17. Nbd2 $6 Nxg3 18. fxg3 d5 19. Bb3 Bc6 $6
+20. Bc2 f5 21. Ne5 Re8 $4 22. Nxc6 Rxe2 23. Nxd8 $1 Rxd2 $4 24. Re8+ $1 Bf8 25. Rxf8+
+Kg7 26. Rf7+ Kg6 27. Bxf5+ Kh6 28. Rxh7# 1-0

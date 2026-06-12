@@ -9,16 +9,55 @@ export interface Score {
   mate?: number;
 }
 
-/** Lichess logistic cp -> win% (0..100) for White; mate collapses to 0/100. */
-export function whiteWinrate(s: Score): number {
+function logisticWinrate(s: Score, k: number): number {
   if (s.mate !== undefined) return s.mate > 0 ? 100 : 0;
   if (s.cp === undefined) return 50;
   const clamped = Math.max(-1500, Math.min(1500, s.cp));
-  return 50 + 50 * (2 / (1 + Math.exp(-0.00368208 * clamped)) - 1);
+  return 50 + 50 * (2 / (1 + Math.exp(-k * clamped)) - 1);
+}
+
+/** Lichess logistic cp -> win% (0..100) for White; mate collapses to 0/100. */
+export function whiteWinrate(s: Score): number {
+  return logisticWinrate(s, 0.00368208);
+}
+
+/**
+ * Steeper cp -> win% used ONLY for accuracy. Lichess's k (0.00368) reads
+ * +100cp as just 59%, so small errors barely dent accuracy and game scores
+ * come out well above chess.com's. Chess.com's win model (like Stockfish's
+ * own WDL calibration) is steeper, making the same errors cost more win%.
+ * k, the harmonic floor and ACCURACY_HOPELESS were calibrated together
+ * against chess.com-reported accuracies: first on 20 fixture games
+ * (scripts/calibrate-batch.ts), then re-fit on 410 stratified GM-dataset
+ * games and validated out-of-sample on 80 current-model games via
+ * scripts/calibrate-gm.ts (pooled MAE 5.04 vs 5.56 for the previous values).
+ * Classification keeps the lichess curve its thresholds were tuned on.
+ */
+const ACCURACY_WIN_K = 0.005;
+
+/**
+ * Mover win% below which a position counts as lost for accuracy: moves with
+ * win% under this both before and after are excluded like book moves, so a
+ * player's accuracy reflects the phase where the game was still contested.
+ * Without it, near-zero-loss shuffling in a lost position banks
+ * perfect-accuracy moves chess.com doesn't credit (and being slowly ground
+ * down tanks a score chess.com doesn't tank). The winning side keeps full
+ * credit for converting. 15 ≈ -350cp on the accuracy curve; the value is
+ * calibrated, see ACCURACY_WIN_K.
+ */
+export const ACCURACY_HOPELESS = 15;
+
+export function accWhiteWinrate(s: Score): number {
+  return logisticWinrate(s, ACCURACY_WIN_K);
 }
 
 export function moverWinrate(mover: Color, s: Score): number {
   const w = whiteWinrate(s);
+  return mover === "w" ? w : 100 - w;
+}
+
+export function accMoverWinrate(mover: Color, s: Score): number {
+  const w = accWhiteWinrate(s);
   return mover === "w" ? w : 100 - w;
 }
 
@@ -75,53 +114,37 @@ export interface MoveAccEntry {
   color: Color;
   /** Per-move accuracy 0..100 (from moveAccuracy). */
   acc: number;
-  /** Book moves are excluded from accuracy. */
-  isBook: boolean;
-}
-
-function stdDev(xs: number[]): number {
-  if (xs.length === 0) return 0;
-  const mean = xs.reduce((a, b) => a + b, 0) / xs.length;
-  return Math.sqrt(xs.reduce((a, b) => a + (b - mean) ** 2, 0) / xs.length);
+  /** Excluded from accuracy: book moves and dead-lost shuffling. */
+  excluded: boolean;
 }
 
 const round1 = (x: number) => Math.round(x * 10) / 10;
 
 /**
- * Lichess game-accuracy method: mean of (a) win%-volatility-weighted mean and
- * (b) harmonic mean of per-move accuracies, per color, book moves excluded.
- * `whiteWinrates` has one entry per position (moves.length + 1).
- * Zero accuracies are floored to 0.1 in the harmonic mean to avoid division
- * by zero, slightly inflating the harmonic component for 0%-accuracy moves.
+ * Harmonic floor: per-move accuracies are floored inside the harmonic mean.
+ * On the steeper accuracy curve a single huge blunder scores ~0, and an
+ * unfloored 1/a term would collapse the harmonic mean to ~n·floor on its
+ * own — one move halving the game score, far below how chess.com reads the
+ * same game. Calibrated, see ACCURACY_WIN_K.
  */
-export function gameAccuracy(
-  moves: MoveAccEntry[],
-  whiteWinrates: number[],
-): { white: number; black: number } {
-  const windowSize = Math.max(2, Math.min(8, Math.ceil(moves.length / 10)));
+const ACCURACY_FLOOR = 25;
 
-  // Volatility weight for move i: std-dev of the win% values spanning
-  // positions [i+1-windowSize .. i+1] — windowSize+1 entries at steady state,
-  // covering the positions before and after the move.
-  const weights = moves.map((_, i) => {
-    const start = Math.max(0, i + 1 - windowSize);
-    const winSlice = whiteWinrates.slice(start, i + 2);
-    return Math.max(0.5, Math.min(12, stdDev(winSlice)));
-  });
-
+/**
+ * Game accuracy: floored harmonic mean of per-move accuracies, per color,
+ * excluded moves (book, lost-position shuffling) skipped.
+ *
+ * Earlier versions blended in lichess's win%-volatility-weighted mean;
+ * calibration against chess.com-reported accuracies preferred dropping the
+ * weighted component entirely (every parameter set in the optimum's
+ * neighbourhood had its blend weight at ~0), so it's gone.
+ */
+export function gameAccuracy(moves: MoveAccEntry[]): { white: number; black: number } {
   const perColor = (color: Color): number => {
-    const accs: number[] = [];
-    const ws: number[] = [];
-    moves.forEach((m, i) => {
-      if (m.color !== color || m.isBook) return;
-      accs.push(m.acc);
-      ws.push(weights[i]);
-    });
+    const accs = moves.filter((m) => m.color === color && !m.excluded).map((m) => m.acc);
     if (accs.length === 0) return 0;
-    const weighted =
-      accs.reduce((sum, a, i) => sum + a * ws[i], 0) / ws.reduce((a, b) => a + b, 0);
-    const harmonic = accs.length / accs.reduce((sum, a) => sum + 1 / Math.max(a, 0.1), 0);
-    return round1((weighted + harmonic) / 2);
+    const harmonic =
+      accs.length / accs.reduce((sum, a) => sum + 1 / Math.max(a, ACCURACY_FLOOR), 0);
+    return round1(harmonic);
   };
 
   return { white: perColor("w"), black: perColor("b") };
