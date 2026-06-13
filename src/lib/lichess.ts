@@ -14,7 +14,7 @@ export interface LichessApiGame {
   speed?: string;
   /** Unix milliseconds. */
   lastMoveAt?: number;
-  players: {
+  players?: {
     white?: { user?: { name?: string } };
     black?: { user?: { name?: string } };
   };
@@ -53,7 +53,7 @@ export async function fetchLichessGames(
     { headers: { Accept: "application/x-ndjson" } },
   );
   if (res.status === 404) {
-    throw new Error(`No Lichess player named "${username.trim()}".`);
+    throw new Error(`No Lichess player named “${username.trim()}”.`);
   }
   if (res.status === 429) {
     throw new Error("Lichess is rate-limiting — wait a moment and try again.");
