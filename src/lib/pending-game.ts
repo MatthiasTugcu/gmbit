@@ -4,7 +4,7 @@ import type { AnalysisMode } from "@/types/analysis";
 const PGN_KEY = "gmbit.pending-pgn";
 const FETCH_KEY = "gmbit.pending-fetch";
 
-/** The chess.com fetch a pending game came from, for the analyze sidebar. */
+/** The fetch a pending game came from, for the analyze sidebar. */
 export interface PendingFetch {
   username: string;
   games: RecentGame[];

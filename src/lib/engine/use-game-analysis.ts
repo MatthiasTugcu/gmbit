@@ -148,10 +148,10 @@ function refinementTargets(game: AnalysisGame, book: BookInfo): number[] {
 }
 
 /**
- * Two-pass Stockfish annotation: a quick pass at BASE_DEPTH / MultiPV 2 for
- * fast progressive feedback, then every non-book position again at
- * REFINE_DEPTH so final classifications and accuracy rest on uniformly deep
- * evals. Results are re-derived progressively as evals arrive.
+ * Stockfish annotation driven by MODE_CONFIG. Always does a quick pass for
+ * fast progressive feedback; in non-fast modes a deep refine pass follows so
+ * final classifications and accuracy rest on uniformly deep evals.
+ * Results are re-derived progressively as evals arrive.
  */
 export function useGameAnalysis(
   game: AnalysisGame,
