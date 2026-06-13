@@ -9,6 +9,7 @@ import type { PendingFetch } from "@/lib/pending-game";
 import { loadPly, savePly } from "@/lib/ply-storage";
 import { useEngineEval } from "@/lib/engine/use-engine-eval";
 import { useGameAnalysis } from "@/lib/engine/use-game-analysis";
+import type { AnalysisMode } from "@/types/analysis";
 import type { Move, Square } from "@/types/analysis";
 import { demoMoves, demoPlayers, demoPly } from "@/data/demo-game";
 
@@ -35,9 +36,11 @@ interface Props {
   /** PGN of the currently open game, to highlight it in the switcher. */
   activePgn?: string;
   onSelectGame?: (g: RecentGame) => void;
+  /** Engine effort chosen on the landing page; defaults to deep. */
+  mode?: AnalysisMode;
 }
 
-export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGame }: Props) {
+export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGame, mode = "deep" }: Props) {
   const [game] = useState<AnalysisGame>(() => initialGame ?? gameFromAnnotated(demoMoves));
   const {
     game: analyzedGame,
@@ -45,7 +48,7 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
     blackAccuracy,
     openingName,
     progress: analysisProgress,
-  } = useGameAnalysis(game);
+  } = useGameAnalysis(game, mode);
   const total = analyzedGame.moves.length;
   // Imported games come with PGN headers; the demo game uses the canned demoPlayers.
   const players = useMemo(() => {
