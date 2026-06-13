@@ -9,10 +9,17 @@ import { parsePgn } from "@/lib/chess-game";
 import { fetchRecentGames } from "@/lib/chesscom";
 import { fetchLichessGames } from "@/lib/lichess";
 import { savePendingMeta, savePendingMode, savePendingPgn } from "@/lib/pending-game";
-import { clearHistory, loadHistory, type HistoryEntry } from "@/lib/history";
+import { clearHistory, loadHistory, type HistoryEntry, type HistorySource } from "@/lib/history";
 import type { AnalysisMode } from "@/types/analysis";
 
 type Source = "pgn" | "chesscom" | "lichess";
+
+const SOURCE_LABEL: Record<HistorySource, string> = {
+  chesscom: "Chess.com",
+  lichess: "Lichess",
+  pgn: "PGN",
+  demo: "Demo",
+};
 
 export function LandingScreen() {
   const router = useRouter();
@@ -223,8 +230,8 @@ export function LandingScreen() {
               <ul className="divide-y divide-line overflow-hidden rounded-md border border-line bg-bg-1">
                 {history.map((entry) => (
                   <li key={entry.pgn} className="flex items-center gap-2.5 px-3 py-2">
-                    <span className="w-[44px] shrink-0 text-[10.5px] font-semibold uppercase tracking-wide text-text-3">
-                      {entry.source}
+                    <span className="w-[44px] shrink-0 text-[10.5px] font-semibold tracking-wide text-text-3">
+                      {SOURCE_LABEL[entry.source]}
                     </span>
                     <button
                       type="button"
