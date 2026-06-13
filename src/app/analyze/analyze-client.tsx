@@ -6,15 +6,34 @@ import { parsePgn, type AnalysisGame } from "@/lib/chess-game";
 import type { RecentGame } from "@/lib/chesscom";
 import {
   loadPendingFetch,
+  loadPendingMeta,
+  loadPendingMode,
   loadPendingPgn,
+  savePendingMeta,
   savePendingPgn,
   type PendingFetch,
+  type PendingMeta,
 } from "@/lib/pending-game";
+import { recordAnalysis, type HistorySource } from "@/lib/history";
+import type { AnalysisMode } from "@/types/analysis";
 
 interface Loaded {
   game: AnalysisGame | undefined;
   pgn: string | null;
   fetch: PendingFetch | null;
+  mode: AnalysisMode;
+  meta: PendingMeta | null;
+}
+
+function record(game: AnalysisGame, pgn: string, source: HistorySource, outcome?: PendingMeta["outcome"]) {
+  recordAnalysis(window.localStorage, {
+    pgn,
+    white: game.headers.White?.trim() || "White",
+    black: game.headers.Black?.trim() || "Black",
+    outcome,
+    source,
+    date: Date.now(),
+  });
 }
 
 /**
@@ -32,6 +51,7 @@ export function AnalyzeClient() {
 
   useEffect(() => {
     const pgn = loadPendingPgn(window.sessionStorage);
+    const meta = loadPendingMeta(window.sessionStorage);
     let game: AnalysisGame | undefined;
     if (pgn) {
       try {
@@ -40,8 +60,15 @@ export function AnalyzeClient() {
         // Stored PGN no longer parses — fall back to the demo game.
       }
     }
+    if (game && pgn) record(game, pgn, meta?.source ?? "pgn", meta?.outcome);
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot read from sessionStorage on mount
-    setLoaded({ game, pgn: game ? pgn : null, fetch: loadPendingFetch(window.sessionStorage) });
+    setLoaded({
+      game,
+      pgn: game ? pgn : null,
+      fetch: loadPendingFetch(window.sessionStorage),
+      mode: loadPendingMode(window.sessionStorage),
+      meta,
+    });
   }, []);
 
   if (!loaded) return null;
@@ -55,6 +82,9 @@ export function AnalyzeClient() {
       return; // unparseable PGN — keep the current game
     }
     savePendingPgn(window.sessionStorage, g.pgn);
+    const source = loaded.fetch?.source ?? "chesscom";
+    savePendingMeta(window.sessionStorage, { source, outcome: g.outcome });
+    record(game, g.pgn, source, g.outcome);
     setLoaded({ ...loaded, game, pgn: g.pgn });
   };
 
@@ -65,6 +95,7 @@ export function AnalyzeClient() {
       recentGames={loaded.fetch ?? undefined}
       activePgn={loaded.pgn ?? undefined}
       onSelectGame={selectGame}
+      mode={loaded.mode}
     />
   );
 }

@@ -54,6 +54,19 @@ export const CLS: Record<
   blunder:    { label: "Blunder",    sym: "??",        short: "??" },
 };
 
+export const CLASS_ORDER: MoveClass[] = [
+  "brilliant",
+  "great",
+  "best",
+  "excellent",
+  "good",
+  "book",
+  "inaccuracy",
+  "mistake",
+  "miss",
+  "blunder",
+];
+
 export const GRAPH_MARK: Set<MoveClass> = new Set([
   "brilliant",
   "great",

@@ -1,19 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GmbitLogo } from "@/components/logo";
-import { ChesscomPanel } from "@/components/landing/chesscom-panel";
+import { FetchPanel } from "@/components/landing/fetch-panel";
 import { parsePgn } from "@/lib/chess-game";
-import { savePendingPgn } from "@/lib/pending-game";
+import { fetchRecentGames } from "@/lib/chesscom";
+import { fetchLichessGames } from "@/lib/lichess";
+import { savePendingMeta, savePendingMode, savePendingPgn } from "@/lib/pending-game";
+import { clearHistory, loadHistory, type HistoryEntry, type HistorySource } from "@/lib/history";
+import type { AnalysisMode } from "@/types/analysis";
 
-type Source = "pgn" | "chesscom";
+type Source = "pgn" | "chesscom" | "lichess";
+
+const SOURCE_LABEL: Record<HistorySource, string> = {
+  chesscom: "Chess.com",
+  lichess: "Lichess",
+  pgn: "PGN",
+  demo: "Demo",
+};
 
 export function LandingScreen() {
   const router = useRouter();
   const [source, setSource] = useState<Source | null>(null);
+  const [mode, setMode] = useState<AnalysisMode>("deep");
   const [pgn, setPgn] = useState("");
   const [pgnError, setPgnError] = useState<string | null>(null);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot read from localStorage on mount
+    setHistory(loadHistory(window.localStorage));
+  }, []);
 
   const analyzePgn = () => {
     const trimmed = pgn.trim();
@@ -32,11 +51,33 @@ export function LandingScreen() {
       return;
     }
     savePendingPgn(window.sessionStorage, trimmed);
+    savePendingMode(window.sessionStorage, mode);
+    savePendingMeta(window.sessionStorage, { source: "pgn" });
     router.push("/analyze");
+  };
+
+  const reopen = (entry: HistoryEntry) => {
+    savePendingPgn(window.sessionStorage, entry.pgn);
+    savePendingMode(window.sessionStorage, mode);
+    savePendingMeta(window.sessionStorage, { source: entry.source, outcome: entry.outcome });
+    router.push("/analyze");
+  };
+
+  const clearAll = () => {
+    clearHistory(window.localStorage);
+    setHistory([]);
   };
 
   return (
     <div className="app-root relative z-[1] flex h-screen flex-col overflow-y-auto">
+      <div className="flex w-full items-center justify-end px-7 py-4">
+        <Link
+          href="/features"
+          className="text-[13px] font-medium text-text-2 transition-colors hover:text-text"
+        >
+          How it works →
+        </Link>
+      </div>
       <main className="flex flex-1 flex-col items-center justify-center px-6 py-14">
         <div className="flex w-full max-w-[640px] flex-col items-center">
           {/* Brand */}
@@ -49,7 +90,7 @@ export function LandingScreen() {
           </p>
 
           {/* Source picker */}
-          <div className="mt-9 grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="mt-9 grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
             <SourceCard
               selected={source === "chesscom"}
               onClick={() => setSource("chesscom")}
@@ -81,29 +122,42 @@ export function LandingScreen() {
               title="Import a PGN"
               description="Paste a game in PGN notation from any source."
             />
+            <SourceCard
+              selected={source === "lichess"}
+              onClick={() => setSource("lichess")}
+              icon={
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-text">
+                  <path d="M12 2l2 5 5 1-4 3 1.5 6L12 14l-4.5 3L9 11 5 8l5-1 2-5z" />
+                </svg>
+              }
+              title="Fetch from Lichess"
+              description="Pull your recent games with just a username."
+            />
           </div>
 
-          {/* Analysis mode picker — not wired up yet */}
+          {/* Analysis mode picker */}
           <div className="mt-3 grid w-full grid-cols-2 gap-3">
-            <button
-              type="button"
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-line bg-bg-1 text-[12.5px] font-medium text-text hover:border-line-2"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-amber-300">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-              </svg>
-              Fast analysis
-            </button>
-            <button
-              type="button"
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-line bg-bg-1 text-[12.5px] font-medium text-text hover:border-line-2"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-amber-300">
-                <circle cx="11" cy="11" r="7" />
-                <line x1="21" y1="21" x2="16" y2="16" />
-              </svg>
-              In-depth analysis
-            </button>
+            <ModeButton
+              selected={mode === "fast"}
+              onClick={() => setMode("fast")}
+              icon={
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-amber-300">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+              }
+              label="Fast analysis"
+            />
+            <ModeButton
+              selected={mode === "deep"}
+              onClick={() => setMode("deep")}
+              icon={
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-amber-300">
+                  <circle cx="11" cy="11" r="7" />
+                  <line x1="21" y1="21" x2="16" y2="16" />
+                </svg>
+              }
+              label="In-depth analysis"
+            />
           </div>
 
           {/* Source detail panel */}
@@ -138,7 +192,65 @@ export function LandingScreen() {
             </div>
           )}
 
-          {source === "chesscom" && <ChesscomPanel key="chesscom" />}
+          {source === "chesscom" && (
+            <FetchPanel
+              key="chesscom"
+              source="chesscom"
+              label="chess.com"
+              placeholder="e.g. hikaru"
+              fetchGames={fetchRecentGames}
+              mode={mode}
+            />
+          )}
+          {source === "lichess" && (
+            <FetchPanel
+              key="lichess"
+              source="lichess"
+              label="Lichess"
+              placeholder="e.g. DrNykterstein"
+              fetchGames={fetchLichessGames}
+              mode={mode}
+            />
+          )}
+
+          {history.length > 0 && (
+            <div className="mt-8 w-full">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-text-3">
+                  Recent analyses
+                </span>
+                <button
+                  type="button"
+                  onClick={clearAll}
+                  className="text-[11.5px] text-text-3 hover:text-text"
+                >
+                  Clear
+                </button>
+              </div>
+              <ul className="divide-y divide-line overflow-hidden rounded-md border border-line bg-bg-1">
+                {history.map((entry) => (
+                  <li key={entry.pgn} className="flex items-center gap-2.5 px-3 py-2">
+                    <span className="w-[44px] shrink-0 text-[10.5px] font-semibold tracking-wide text-text-3">
+                      {SOURCE_LABEL[entry.source]}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => reopen(entry)}
+                      className="min-w-0 flex-1 truncate text-left text-[12.5px] text-text hover:text-accent-bright"
+                    >
+                      {entry.white} <span className="text-text-3">vs</span> {entry.black}
+                    </button>
+                    <span className="shrink-0 text-[11px] tabular-nums text-text-3">
+                      {new Date(entry.date).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </main>
 
@@ -194,6 +306,34 @@ function SourceCard({
         {title}
       </span>
       <span className="text-[11.5px] leading-[1.5] text-text-3">{description}</span>
+    </button>
+  );
+}
+
+function ModeButton({
+  selected,
+  onClick,
+  icon,
+  label,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}
+      className={`inline-flex h-9 items-center justify-center gap-2 rounded-md border text-[12.5px] font-medium transition-[border-color,background-color] ${
+        selected
+          ? "border-accent bg-accent/15 text-text"
+          : "border-line bg-bg-1 text-text hover:border-line-2"
+      }`}
+    >
+      {icon}
+      {label}
     </button>
   );
 }

@@ -1,10 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
+  clearPendingPgn,
   loadPendingFetch,
+  loadPendingMeta,
+  loadPendingMode,
   loadPendingPgn,
   savePendingFetch,
+  savePendingMeta,
+  savePendingMode,
   savePendingPgn,
   type PendingFetch,
+  type PendingMeta,
 } from "./pending-game";
 
 function memoryStorage(): Storage {
@@ -80,5 +86,46 @@ describe("pending fetch handoff", () => {
       throw new Error("quota");
     };
     expect(() => savePendingFetch(s, fetch)).not.toThrow();
+  });
+});
+
+describe("pending mode handoff", () => {
+  it("round-trips a known mode", () => {
+    const s = memoryStorage();
+    savePendingMode(s, "fast");
+    expect(loadPendingMode(s)).toBe("fast");
+  });
+
+  it("defaults to deep when missing or unknown", () => {
+    const s = memoryStorage();
+    expect(loadPendingMode(s)).toBe("deep");
+    s.setItem("gmbit.pending-mode", "wat");
+    expect(loadPendingMode(s)).toBe("deep");
+  });
+});
+
+describe("pending meta handoff", () => {
+  const meta: PendingMeta = { source: "lichess", outcome: "won" };
+
+  it("round-trips the meta", () => {
+    const s = memoryStorage();
+    savePendingMeta(s, meta);
+    expect(loadPendingMeta(s)).toEqual(meta);
+  });
+
+  it("returns null when missing or corrupt", () => {
+    const s = memoryStorage();
+    expect(loadPendingMeta(s)).toBeNull();
+    s.setItem("gmbit.pending-meta", "{nope");
+    expect(loadPendingMeta(s)).toBeNull();
+  });
+});
+
+describe("clearPendingPgn", () => {
+  it("removes a stored PGN", () => {
+    const s = memoryStorage();
+    savePendingPgn(s, "1. e4");
+    clearPendingPgn(s);
+    expect(loadPendingPgn(s)).toBeNull();
   });
 });

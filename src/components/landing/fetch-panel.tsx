@@ -2,37 +2,52 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { fetchRecentGames, type RecentGame } from "@/lib/chesscom";
+import type { RecentGame } from "@/lib/chesscom";
+import type { AnalysisMode } from "@/types/analysis";
 import { parsePgn } from "@/lib/chess-game";
-import { savePendingFetch, savePendingPgn } from "@/lib/pending-game";
+import { savePendingFetch, savePendingMeta, savePendingMode, savePendingPgn } from "@/lib/pending-game";
+import { loadUsername, saveUsername, type FetchSource } from "@/lib/landing-prefs";
 
 const GAME_LIMIT = 100;
 
-export function ChesscomPanel() {
+interface Props {
+  source: FetchSource;
+  /** Human label, e.g. "chess.com" or "Lichess". */
+  label: string;
+  placeholder: string;
+  fetchGames: (username: string, limit: number) => Promise<RecentGame[]>;
+  /** Analysis effort to hand off with the chosen game. */
+  mode: AnalysisMode;
+}
+
+export function FetchPanel({ source, label, placeholder, fetchGames, mode }: Props) {
   const router = useRouter();
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(() =>
+    typeof window === "undefined" ? "" : loadUsername(window.localStorage, source),
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [games, setGames] = useState<RecentGame[] | null>(null);
 
-  const fetchGames = async () => {
+  const runFetch = async () => {
     const name = username.trim();
     if (!name) {
-      setError("Enter a chess.com username.");
+      setError(`Enter a ${label} username.`);
       return;
     }
     setLoading(true);
     setError(null);
     setGames(null);
     try {
-      const fetched = await fetchRecentGames(name, GAME_LIMIT);
+      const fetched = await fetchGames(name, GAME_LIMIT);
       if (fetched.length === 0) {
-        setError(`No games found for “${name}”.`);
+        setError(`No games found for "${name}".`);
       } else {
         setGames(fetched);
+        saveUsername(window.localStorage, source, name);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not reach chess.com.");
+      setError(e instanceof Error ? e.message : `Could not reach ${label}.`);
     } finally {
       setLoading(false);
     }
@@ -46,26 +61,28 @@ export function ChesscomPanel() {
       return;
     }
     savePendingPgn(window.sessionStorage, g.pgn);
+    savePendingMode(window.sessionStorage, mode);
+    savePendingMeta(window.sessionStorage, { source, outcome: g.outcome });
     if (games) {
-      savePendingFetch(window.sessionStorage, { username: username.trim(), games });
+      savePendingFetch(window.sessionStorage, { username: username.trim(), games, source });
     }
     router.push("/analyze");
   };
 
   return (
     <div className="rise-in mt-4 w-full rounded-md border border-line bg-bg-1 p-[18px]">
-      <label htmlFor="chesscom-username" className="mb-2 block text-[12px] text-text-3">
-        Insert your username
+      <label htmlFor="fetch-username" className="mb-2 block text-[12px] text-text-3">
+        Insert your {label} username
       </label>
       <form
         className="flex items-center gap-2"
         onSubmit={(e) => {
           e.preventDefault();
-          void fetchGames();
+          void runFetch();
         }}
       >
         <input
-          id="chesscom-username"
+          id="fetch-username"
           value={username}
           onChange={(e) => {
             setUsername(e.target.value);
@@ -73,7 +90,7 @@ export function ChesscomPanel() {
           }}
           spellCheck={false}
           autoFocus
-          placeholder="e.g. hikaru"
+          placeholder={placeholder}
           className="h-9 w-full rounded-md border border-line bg-bg-2 px-3 text-[13px] text-text outline-none placeholder:text-text-3/70 focus:border-accent"
         />
         <button
@@ -91,9 +108,7 @@ export function ChesscomPanel() {
         </div>
       )}
       {loading && (
-        <div className="mt-2 text-[12px] text-text-3">
-          Loading the last {GAME_LIMIT} games…
-        </div>
+        <div className="mt-2 text-[12px] text-text-3">Loading the last {GAME_LIMIT} games…</div>
       )}
 
       {games && (
