@@ -17,16 +17,31 @@ import { bookMoves, loadOpenings, type BookInfo } from "@/lib/analysis/openings"
 import { isSacrifice } from "@/lib/analysis/sacrifice";
 import { createEngine, type AnalysisInfo, type Engine } from "./index";
 import { mapPool } from "./pool";
+import type { AnalysisMode } from "@/types/analysis";
 
-const BASE_DEPTH = 14;
-const REFINE_DEPTH = 20;
-const MULTI_PV = 2;
+interface ModeConfig {
+  baseDepth: number;
+  /** null = skip the deep refine pass entirely (fast mode). */
+  refineDepth: number | null;
+  multiPv: number;
+  refineMovetimeMs: number;
+}
+
 /**
- * Hard cap per deep-pass search. Most positions reach depth 20 well inside
- * this; the cap only trims pathological positions that would otherwise hold
- * the whole analysis (and its progress bar) hostage for 30+ seconds.
+ * Per-mode search parameters. `deep` reproduces the original two-pass
+ * behaviour; `fast` runs a single shallow pass for ~3-4x quicker, rougher
+ * analysis.
  */
-const REFINE_MOVETIME_MS = 5000;
+export const MODE_CONFIG: Record<AnalysisMode, ModeConfig> = {
+  fast: { baseDepth: 14, refineDepth: null, multiPv: 1, refineMovetimeMs: 0 },
+  deep: { baseDepth: 14, refineDepth: 20, multiPv: 2, refineMovetimeMs: 5000 },
+};
+
+/** Total engine searches a run will perform, for the monotonic progress bar. */
+export function searchTotal(fenCount: number, targetCount: number, mode: AnalysisMode): number {
+  return fenCount + (MODE_CONFIG[mode].refineDepth === null ? 0 : targetCount);
+}
+
 /** Engine workers analysing in parallel. Each is a single-threaded WASM
  * Stockfish, so the pool scales with cores; leave headroom for the UI. */
 const POOL_LANES = () =>
@@ -138,7 +153,10 @@ function refinementTargets(game: AnalysisGame, book: BookInfo): number[] {
  * REFINE_DEPTH so final classifications and accuracy rest on uniformly deep
  * evals. Results are re-derived progressively as evals arrive.
  */
-export function useGameAnalysis(game: AnalysisGame): GameAnalysisResult {
+export function useGameAnalysis(
+  game: AnalysisGame,
+  mode: AnalysisMode = "deep",
+): GameAnalysisResult {
   const [annotated, setAnnotated] = useState<AnalysisGame>(game);
   const [accuracy, setAccuracy] = useState({ white: 0, black: 0 });
   const [openingName, setOpeningName] = useState<string | null>(null);
@@ -177,7 +195,8 @@ export function useGameAnalysis(game: AnalysisGame): GameAnalysisResult {
         // Both passes' search counts are known upfront, so the progress bar
         // is monotonic — no backward jump when the deep pass starts.
         const targets = refinementTargets(game, book);
-        const totalSearches = game.fens.length + targets.length;
+        const cfg = MODE_CONFIG[mode];
+        const totalSearches = searchTotal(game.fens.length, targets.length, mode);
         let done = 0;
         setProgress({ done, total: totalSearches });
 
@@ -196,7 +215,7 @@ export function useGameAnalysis(game: AnalysisGame): GameAnalysisResult {
             if (cancelled) return;
             const info = await engines[lane].analyze(game.fens[idx], {
               depth,
-              multiPv: MULTI_PV,
+              multiPv: cfg.multiPv,
               movetime,
             });
             if (cancelled) return;
@@ -208,9 +227,11 @@ export function useGameAnalysis(game: AnalysisGame): GameAnalysisResult {
 
         // Base pass over every position, then the deep pass over every
         // position the classifications/accuracy use.
-        await runPass(game.fens.map((_, i) => i), BASE_DEPTH);
+        await runPass(game.fens.map((_, i) => i), cfg.baseDepth);
         if (cancelled) return;
-        await runPass(targets, REFINE_DEPTH, REFINE_MOVETIME_MS);
+        if (cfg.refineDepth !== null) {
+          await runPass(targets, cfg.refineDepth, cfg.refineMovetimeMs);
+        }
         // Analysis is finished — free the workers without waiting for the
         // next game change or unmount.
         destroyEngines();
@@ -224,7 +245,7 @@ export function useGameAnalysis(game: AnalysisGame): GameAnalysisResult {
       cancelled = true;
       destroyEngines();
     };
-  }, [game]);
+  }, [game, mode]);
 
   return {
     game: annotated,

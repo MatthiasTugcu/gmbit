@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toPositionEval } from "./use-game-analysis";
+import { searchTotal, MODE_CONFIG, toPositionEval } from "./use-game-analysis";
 import type { AnalysisInfo } from "./index";
 
 const W_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -44,5 +44,22 @@ describe("toPositionEval", () => {
     expect(ev.lines[0].score.cp).toBe(20);
     expect(ev.lines[1].score.cp).toBe(45);
     expect(ev.lines[1].uci).toBe("g8f6");
+  });
+});
+
+describe("searchTotal", () => {
+  it("counts base + refine passes in deep mode", () => {
+    expect(searchTotal(40, 30, "deep")).toBe(70);
+  });
+
+  it("counts only the base pass in fast mode", () => {
+    expect(searchTotal(40, 30, "fast")).toBe(40);
+  });
+});
+
+describe("MODE_CONFIG", () => {
+  it("skips the deep pass in fast mode and keeps it in deep mode", () => {
+    expect(MODE_CONFIG.fast.refineDepth).toBeNull();
+    expect(MODE_CONFIG.deep.refineDepth).toBe(20);
   });
 });
