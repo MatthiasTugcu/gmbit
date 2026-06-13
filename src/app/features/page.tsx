@@ -1,25 +1,11 @@
 import Link from "next/link";
-import type { MoveClass } from "@/types/analysis";
-import { CLS } from "@/lib/classification";
+import { CLS, CLASS_ORDER } from "@/lib/classification";
 import { GmbitLogo } from "@/components/logo";
 import { TryExampleButton } from "./try-example-button";
 
 export const metadata = {
   title: "How it works — gmbit",
 };
-
-const CLASS_ORDER: MoveClass[] = [
-  "brilliant",
-  "great",
-  "best",
-  "excellent",
-  "good",
-  "book",
-  "inaccuracy",
-  "mistake",
-  "miss",
-  "blunder",
-];
 
 export default function FeaturesPage() {
   return (

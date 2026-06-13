@@ -1,23 +1,10 @@
-import type { Move, MoveClass } from "@/types/analysis";
-import { CLS } from "@/lib/classification";
+import type { Move } from "@/types/analysis";
+import { CLS, CLASS_ORDER } from "@/lib/classification";
 
 interface Props {
   move: Move | null;
   showLegend?: boolean;
 }
-
-const LEGEND_ORDER: MoveClass[] = [
-  "brilliant",
-  "great",
-  "best",
-  "excellent",
-  "good",
-  "book",
-  "inaccuracy",
-  "mistake",
-  "miss",
-  "blunder",
-];
 
 export function ClassBar({ move, showLegend }: Props) {
   if (!move) {
@@ -66,7 +53,7 @@ export function ClassBar({ move, showLegend }: Props) {
       </div>
       {showLegend && (
         <div className="mt-[11px] flex flex-wrap gap-x-3 gap-y-1.5 border-t border-line pt-[11px]">
-          {LEGEND_ORDER.map((k) => (
+          {CLASS_ORDER.map((k) => (
             <span key={k} className="flex items-center gap-1.5 text-[11px] text-text-2">
               <span
                 className="h-3 w-3 rounded-full"
