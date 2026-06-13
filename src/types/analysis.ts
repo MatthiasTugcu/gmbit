@@ -51,3 +51,6 @@ export interface Engine {
   kind: string;
   depth: number;
 }
+
+/** Engine effort selected on the landing page. */
+export type AnalysisMode = "fast" | "deep";
