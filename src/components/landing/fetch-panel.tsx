@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import type { RecentGame } from "@/lib/chesscom";
 import type { AnalysisMode } from "@/types/analysis";
 import { parsePgn } from "@/lib/chess-game";
 import { savePendingFetch, savePendingMeta, savePendingMode, savePendingPgn } from "@/lib/pending-game";
 import { loadUsername, saveUsername, type FetchSource } from "@/lib/landing-prefs";
+import { timeControlLabel } from "@/lib/time-control";
+import { SideSquare } from "@/components/landing/side-square";
+import { TimeControlIcon } from "@/components/landing/time-control-icon";
 
 const GAME_LIMIT = 100;
 
@@ -21,7 +23,6 @@ interface Props {
 }
 
 export function FetchPanel({ source, label, placeholder, fetchGames, mode }: Props) {
-  const router = useRouter();
   const [username, setUsername] = useState(() =>
     typeof window === "undefined" ? "" : loadUsername(window.localStorage, source),
   );
@@ -66,7 +67,8 @@ export function FetchPanel({ source, label, placeholder, fetchGames, mode }: Pro
     if (games) {
       savePendingFetch(window.sessionStorage, { username: username.trim(), games, source });
     }
-    router.push("/analyze");
+    // Full navigation so /analyze loads cross-origin-isolated (threaded engine).
+    window.location.assign("/analyze");
   };
 
   return (
@@ -135,37 +137,36 @@ const OUTCOME_STYLE: Record<RecentGame["outcome"], { label: string; className: s
 
 function GameRow({ game, onAnalyze }: { game: RecentGame; onAnalyze: () => void }) {
   const outcome = OUTCOME_STYLE[game.outcome];
+  const timeControl = timeControlLabel(game.pgn);
   const date = new Date(game.endTime * 1000).toLocaleDateString(undefined, {
     year: "numeric",
     month: "short",
     day: "numeric",
   });
   return (
-    <li className="flex items-center gap-2.5 px-3 py-2">
-      <span className="w-[84px] shrink-0 text-[11.5px] tabular-nums text-text-3">{date}</span>
-      <span
-        className={`w-[46px] shrink-0 rounded-[5px] px-1.5 py-0.5 text-center text-[11px] font-semibold ${outcome.className}`}
-      >
-        {outcome.label}
-      </span>
-      <span className="min-w-0 flex-1 truncate text-[12.5px] text-text">
-        {game.white} <span className="text-text-3">vs</span> {game.black}
-      </span>
-      <span
-        className={`w-[52px] shrink-0 rounded-[5px] border px-1.5 py-0.5 text-center text-[10px] font-semibold tracking-wide ${
-          game.userSide === "white"
-            ? "border-line-2 bg-[oklch(0.95_0.005_288)] text-[oklch(0.18_0.02_288)]"
-            : "border-line-2 bg-[oklch(0.18_0.02_288)] text-[oklch(0.95_0.005_288)]"
-        }`}
-      >
-        {game.userSide === "white" ? "WHITE" : "BLACK"}
-      </span>
+    <li>
       <button
         type="button"
         onClick={onAnalyze}
-        className="h-7 shrink-0 rounded-md border border-transparent bg-gradient-to-br from-accent-bright to-accent px-2.5 text-[11.5px] font-medium text-white hover:brightness-110 active:translate-y-px"
+        className="flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-bg-3"
       >
-        Analyze
+        <span className="w-[84px] shrink-0 text-[11.5px] tabular-nums text-text-3">{date}</span>
+        <span
+          className={`w-[46px] shrink-0 rounded-[5px] px-1.5 py-0.5 text-center text-[11px] font-semibold ${outcome.className}`}
+        >
+          {outcome.label}
+        </span>
+        {timeControl && (
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-[5px] border border-line bg-bg-2 px-1.5 py-0.5 text-[10.5px] font-medium text-text-3">
+            <TimeControlIcon pgn={game.pgn} />
+            {timeControl}
+          </span>
+        )}
+        <span className="min-w-0 flex-1 truncate text-[12.5px] text-text">
+          <SideSquare side="white" />
+          {game.white} <span className="text-text-3">vs</span> <SideSquare side="black" />
+          {game.black}
+        </span>
       </button>
     </li>
   );

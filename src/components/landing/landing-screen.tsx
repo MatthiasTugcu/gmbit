@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { GmbitLogo } from "@/components/logo";
 import { Wordmark } from "@/components/wordmark";
 import { FetchPanel } from "@/components/landing/fetch-panel";
@@ -15,6 +14,7 @@ import { fetchRecentGames } from "@/lib/chesscom";
 import { fetchLichessGames } from "@/lib/lichess";
 import { savePendingMeta, savePendingMode, savePendingPgn } from "@/lib/pending-game";
 import { clearHistory, loadHistory, type HistoryEntry, type HistorySource } from "@/lib/history";
+import { loadModePreference, saveModePreference } from "@/lib/mode-preference";
 import type { AnalysisMode } from "@/types/analysis";
 
 type Source = "pgn" | "chesscom" | "lichess";
@@ -32,7 +32,10 @@ const MODE_LABEL: Record<AnalysisMode, string> = {
 };
 
 export function LandingScreen() {
-  const router = useRouter();
+  // Full navigation (not an SPA push) so /analyze loads with its COOP/COEP
+  // headers and becomes cross-origin-isolated — required for the threaded
+  // engine's SharedArrayBuffer. An in-app push keeps the un-isolated home doc.
+  const goAnalyze = () => window.location.assign("/analyze");
   const [source, setSource] = useState<Source | null>(null);
   const [mode, setMode] = useState<AnalysisMode>("fast");
   const [pgn, setPgn] = useState("");
@@ -40,9 +43,18 @@ export function LandingScreen() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot read from localStorage on mount
+    /* eslint-disable react-hooks/set-state-in-effect -- one-shot read from localStorage on mount */
     setHistory(loadHistory(window.localStorage));
+    setMode(loadModePreference(window.localStorage));
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
+
+  // Remember the picked model so it's stable across visits and drives which
+  // model a re-opened recent game is analysed with.
+  const chooseMode = (next: AnalysisMode) => {
+    setMode(next);
+    saveModePreference(window.localStorage, next);
+  };
 
   const analyzePgn = () => {
     const trimmed = pgn.trim();
@@ -63,14 +75,14 @@ export function LandingScreen() {
     savePendingPgn(window.sessionStorage, trimmed);
     savePendingMode(window.sessionStorage, mode);
     savePendingMeta(window.sessionStorage, { source: "pgn" });
-    router.push("/analyze");
+    goAnalyze();
   };
 
   const reopen = (entry: HistoryEntry) => {
     savePendingPgn(window.sessionStorage, entry.pgn);
     savePendingMode(window.sessionStorage, mode);
     savePendingMeta(window.sessionStorage, { source: entry.source, outcome: entry.outcome });
-    router.push("/analyze");
+    goAnalyze();
   };
 
   const clearAll = () => {
@@ -106,7 +118,7 @@ export function LandingScreen() {
           <div className="mt-9 grid w-full grid-cols-2 gap-3">
             <ModeButton
               selected={mode === "fast"}
-              onClick={() => setMode("fast")}
+              onClick={() => chooseMode("fast")}
               icon={
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-amber-300">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
@@ -116,7 +128,7 @@ export function LandingScreen() {
             />
             <ModeButton
               selected={mode === "deep"}
-              onClick={() => setMode("deep")}
+              onClick={() => chooseMode("deep")}
               icon={
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-amber-300">
                   <circle cx="11" cy="11" r="7" />

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   classifyMove,
+  decidedForAccuracy,
   gameAccuracy,
   moveAccuracy,
   moverScore,
@@ -307,5 +308,26 @@ describe("gameAccuracy", () => {
   it("returns 0 for a side with no countable moves", () => {
     const e = entries([["w", 100]]);
     expect(gameAccuracy(e).black).toBe(0);
+  });
+});
+
+describe("decidedForAccuracy", () => {
+  it("excludes a move lost for both sides (hopeless)", () => {
+    expect(decidedForAccuracy(10, 5)).toBe(true);
+  });
+
+  it("excludes a move that keeps an already-won position winning", () => {
+    // 99.9% -> 62%: a deep-search swing in a decided win, not a real blunder.
+    expect(decidedForAccuracy(99.9, 62)).toBe(true);
+  });
+
+  it("still counts a move that throws a winning position away", () => {
+    // 88% -> 12%: dropped below 'still winning', so it stays counted.
+    expect(decidedForAccuracy(88, 12)).toBe(false);
+  });
+
+  it("counts normal, contested moves", () => {
+    expect(decidedForAccuracy(60, 45)).toBe(false);
+    expect(decidedForAccuracy(37, 0)).toBe(false); // losing side, but not 'decided' by the win% read
   });
 });

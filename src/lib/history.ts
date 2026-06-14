@@ -1,3 +1,5 @@
+import type { AnalysisMode } from "@/types/analysis";
+
 /** Locally-stored list of recently analysed games for quick re-open. */
 export type HistorySource = "chesscom" | "lichess" | "pgn" | "demo";
 
@@ -9,6 +11,11 @@ export interface HistoryEntry {
   source: HistorySource;
   /** Unix milliseconds when last analysed. */
   date: number;
+  /** Effort the game was analysed at — filled in once analysis completes. */
+  mode?: AnalysisMode;
+  /** Per-side accuracy percentages — filled in once analysis completes. */
+  whiteAccuracy?: number;
+  blackAccuracy?: number;
 }
 
 const KEY = "gmbit.history";
@@ -37,6 +44,26 @@ export function recordAnalysis(storage: Storage, entry: HistoryEntry): void {
     storage.setItem(KEY, JSON.stringify(list.slice(0, CAP)));
   } catch {
     /* storage unavailable or quota exceeded — ignore */
+  }
+}
+
+/**
+ * Merge analysis results (mode + accuracies) into an existing entry, matched by
+ * PGN. No-op if the game isn't in history (e.g. the demo). Order is preserved.
+ */
+export function updateAnalysis(
+  storage: Storage,
+  pgn: string,
+  fields: Pick<HistoryEntry, "mode" | "whiteAccuracy" | "blackAccuracy">,
+): void {
+  try {
+    const list = loadHistory(storage);
+    const i = list.findIndex((e) => e.pgn === pgn);
+    if (i === -1) return;
+    list[i] = { ...list[i], ...fields };
+    storage.setItem(KEY, JSON.stringify(list));
+  } catch {
+    /* storage unavailable — ignore */
   }
 }
 

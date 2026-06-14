@@ -11,7 +11,8 @@ export function formatEval(cp?: number, mate?: number): string {
 // 0..1 share of the bar that is White.
 export function whiteShare(cp?: number, mate?: number): number {
   if (mate !== undefined && mate !== null) {
-    return mate >= 0 ? 0.985 : 0.015;
+    // Any forced mate fills the bar completely for the mating side.
+    return mate > 0 ? 1 : mate < 0 ? 0 : 0.985;
   }
   const pawns = (cp ?? 0) / 100;
   return 0.5 + 0.5 * Math.tanh(pawns / 4);

@@ -47,6 +47,26 @@ const ACCURACY_WIN_K = 0.005;
  */
 export const ACCURACY_HOPELESS = 15;
 
+/**
+ * Mirror of ACCURACY_HOPELESS for the winning side. A move made from an already
+ * decided win (mover win% ≥ ACCURACY_WON) that keeps the mover winning
+ * (win% ≥ ACCURACY_WON_KEEP afterwards) is excluded from accuracy. In long,
+ * tablebase-less endgames the deep search eval swings between, say, +15 and
+ * +1.5 while the win is shuffled home; without this, each swing is scored as a
+ * huge win% loss and tanks the score on moves that never gave the win away.
+ * A move that actually drops below "still winning" stays counted (a real
+ * fumble), so conversion is still required.
+ */
+export const ACCURACY_WON = 85;
+export const ACCURACY_WON_KEEP = 50;
+
+/** Whether a move should be excluded from accuracy because the game was already decided. */
+export function decidedForAccuracy(winBefore: number, winAfter: number): boolean {
+  const lost = winBefore < ACCURACY_HOPELESS && winAfter < ACCURACY_HOPELESS;
+  const keptWin = winBefore >= ACCURACY_WON && winAfter >= ACCURACY_WON_KEEP;
+  return lost || keptWin;
+}
+
 export function accWhiteWinrate(s: Score): number {
   return logisticWinrate(s, ACCURACY_WIN_K);
 }

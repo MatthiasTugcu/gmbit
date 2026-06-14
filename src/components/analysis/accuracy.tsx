@@ -1,28 +1,22 @@
 import type { Players } from "@/types/analysis";
 
-function AccuracyBar({
-  symbol,
-  label,
-  pct,
-}: {
-  symbol: string;
-  label: string;
-  pct: number;
-}) {
+function AccuracyBar({ side, pct }: { side: "white" | "black"; pct: number }) {
   return (
     <div>
-      <div className="mb-1.5 flex items-baseline gap-[7px]">
-        <span className="text-sm leading-none text-text-2">{symbol}</span>
-        <span className="text-[21px] font-semibold tracking-tight tabular-nums">{pct}</span>
-        <span className="text-[11.5px] text-text-3">%</span>
+      <div className="mb-2">
+        <span
+          className={`inline-flex h-8 items-center justify-center rounded-[6px] border border-line-2 px-2.5 text-[15px] font-bold tabular-nums ${
+            side === "white"
+              ? "bg-[oklch(0.95_0.005_288)] text-[oklch(0.18_0.02_288)]"
+              : "bg-[oklch(0.18_0.02_288)] text-[oklch(0.95_0.005_288)]"
+          }`}
+        >
+          {pct}%
+        </span>
       </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-bg-3">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-accent to-accent-bright"
-          style={{ width: `${pct}%` }}
-        />
+      <div className="h-2.5 overflow-hidden rounded-full bg-bg-3">
+        <div className="h-full rounded-full bg-white" style={{ width: `${pct}%` }} />
       </div>
-      <div className="mt-1.5 text-[11.5px] text-text-3">{label}</div>
     </div>
   );
 }
@@ -34,8 +28,8 @@ export function Accuracy({ players }: { players: Players }) {
         Accuracy
       </h4>
       <div className="grid grid-cols-2 gap-3">
-        <AccuracyBar symbol={"\u2654"} label="White" pct={players.white.accuracy} />
-        <AccuracyBar symbol={"\u265A"} label="Black" pct={players.black.accuracy} />
+        <AccuracyBar side="white" pct={players.white.accuracy} />
+        <AccuracyBar side="black" pct={players.black.accuracy} />
       </div>
     </div>
   );

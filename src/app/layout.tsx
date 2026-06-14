@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
-import { Montserrat, Geist_Mono } from "next/font/google";
+import { Open_Sans, Montserrat, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const montserrat = Montserrat({
+// Friendly humanist sans for the bulk of the UI. Loaded as a variable font so
+// any weight (incl. the heavier body default and bumped utility scale) renders.
+const openSans = Open_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+});
+
+// Crisper, more neutral face kept for "serious" labels (brand names, etc.).
+const montserrat = Montserrat({
+  variable: "--font-serious",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
 });
 
 const geistMono = Geist_Mono({
@@ -14,7 +22,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "gmbit — Game Analysis",
+  title: "gmbit",
   description: "Chess game analysis with engine evaluation.",
 };
 
@@ -26,7 +34,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${montserrat.variable} ${geistMono.variable}`}
+      className={`${openSans.variable} ${montserrat.variable} ${geistMono.variable}`}
     >
       <body>{children}</body>
     </html>

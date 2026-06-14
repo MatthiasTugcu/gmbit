@@ -20,6 +20,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Chess } from "chess.js";
 import {
+  ACCURACY_WON,
+  ACCURACY_WON_KEEP,
+  decidedForAccuracy,
   gameAccuracy,
   moveAccuracy,
   type MoveAccEntry,
@@ -344,6 +347,8 @@ function predictFromGameK(g: GameK, p: Params): { white: number; black: number }
       if (g.isWhite[i] !== white) continue;
       if (g.book[i]) continue;
       if (p.hopeless > 0 && g.wBefore[i] < p.hopeless && g.wAfter[i] < p.hopeless) continue;
+      // Mirror classify.decidedForAccuracy: a kept, already-won position is excluded too.
+      if (g.wBefore[i] >= ACCURACY_WON && g.wAfter[i] >= ACCURACY_WON_KEEP) continue;
       wNum += g.acc[i] * g.weight[i];
       wDen += g.weight[i];
       hDen += 1 / Math.max(g.acc[i], p.floor);
@@ -431,7 +436,7 @@ for (let gi = 0; gi < games.length; gi++) {
     entries.push({
       color: gk.isWhite[i] ? "w" : "b",
       acc: gk.acc[i],
-      excluded: gk.book[i] === 1 || (gk.wBefore[i] < APP_HOPELESS && gk.wAfter[i] < APP_HOPELESS),
+      excluded: gk.book[i] === 1 || decidedForAccuracy(gk.wBefore[i], gk.wAfter[i]),
     });
   }
   const app = gameAccuracy(entries);

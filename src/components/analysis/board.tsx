@@ -1,9 +1,12 @@
 "use client";
 
-import type { CSSProperties } from "react";
-import { Chessboard } from "react-chessboard";
+import { useEffect, useState, type CSSProperties } from "react";
+import { Chessboard, defaultPieces } from "react-chessboard";
 import type { MoveClass, Square } from "@/types/analysis";
 import { CLS } from "@/lib/classification";
+
+/** Board move-animation duration; the revive overlay clears after the same span. */
+const ANIMATION_MS = 220;
 
 interface Props {
   position: string;
@@ -20,6 +23,12 @@ interface Props {
   legalTargets?: { square: Square; capture: boolean }[];
   /** Best-move arrow (engine PV[0]) drawn as a single arrow. */
   bestArrow?: { from: Square; to: Square } | null;
+  /**
+   * A piece to paint immediately on a square while the board animates — used
+   * when stepping back over a capture so the recaptured piece reappears at once
+   * instead of waiting for react-chessboard's move animation to finish.
+   */
+  revive?: { square: Square; piece: string; nonce: number } | null;
   onPieceDrop?: (from: string, to: string) => boolean;
   onSquareClick?: (square: Square) => void;
 }
@@ -61,9 +70,21 @@ export function Board({
   selectedSquare,
   legalTargets,
   bestArrow,
+  revive,
   onPieceDrop,
   onSquareClick,
 }: Props) {
+  // Paint the recaptured piece for one animation span, then drop it — by then
+  // react-chessboard has swapped in the real position and rendered it itself.
+  const [revived, setRevived] = useState<{ square: Square; piece: string } | null>(null);
+  useEffect(() => {
+    if (!revive) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- show the overlay the moment a back-step arrives, then retire it
+    setRevived({ square: revive.square, piece: revive.piece });
+    const t = setTimeout(() => setRevived(null), ANIMATION_MS);
+    return () => clearTimeout(t);
+  }, [revive?.nonce, revive?.square, revive?.piece, revive]);
+
   const squareStyles: Record<string, CSSProperties> = {};
   if (highlight) {
     squareStyles[highlight.from] = { background: "var(--hl)" };
@@ -133,7 +154,7 @@ export function Board({
           position,
           boardOrientation: flip ? "black" : "white",
           showNotation: showCoords,
-          animationDurationInMs: 220,
+          animationDurationInMs: ANIMATION_MS,
           darkSquareStyle: { backgroundColor: "var(--sq-dark)" },
           lightSquareStyle: { backgroundColor: "var(--sq-light)" },
           squareStyles,
@@ -152,6 +173,24 @@ export function Board({
           arrows,
         }}
       />
+      {revived && defaultPieces[revived.piece] && (() => {
+        const p = squarePixel(revived.square, flip, size);
+        return (
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              left: p.left,
+              top: p.top,
+              width: p.sq,
+              height: p.sq,
+              pointerEvents: "none",
+            }}
+          >
+            {defaultPieces[revived.piece]({ svgStyle: { width: "100%", height: "100%" } })}
+          </div>
+        );
+      })()}
       {badge && (
         <div
           style={{

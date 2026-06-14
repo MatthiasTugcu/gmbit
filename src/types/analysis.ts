@@ -30,6 +30,8 @@ export interface Move {
   check?: boolean;
   mateMove?: boolean;
   castle?: { rookFrom: Square; rookTo: Square };
+  /** Clock remaining (seconds) for the mover after this move, from PGN `[%clk]`. */
+  clock?: number;
 }
 
 export interface Frame {

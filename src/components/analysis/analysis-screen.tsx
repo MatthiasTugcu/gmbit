@@ -1,12 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
+import { defaultPieces } from "react-chessboard";
 import type { AnalysisGame } from "@/lib/chess-game";
+import { computeMaterial } from "@/lib/material";
 import { gameFromAnnotated, playersFromHeaders, tryMove } from "@/lib/chess-game";
 import type { RecentGame } from "@/lib/chesscom";
 import type { PendingFetch } from "@/lib/pending-game";
 import { loadPly, savePly } from "@/lib/ply-storage";
+import { updateAnalysis } from "@/lib/history";
 import { useEngineEval } from "@/lib/engine/use-engine-eval";
 import { useGameAnalysis } from "@/lib/engine/use-game-analysis";
 import type { AnalysisMode } from "@/types/analysis";
@@ -22,6 +25,12 @@ import { Controls } from "./controls";
 import { Board } from "./board";
 import { EvalBar } from "./eval-bar";
 import { EvalGraph } from "./eval-graph";
+
+/** White outline for black captured pieces, so they read on the dark strip and
+ * stay distinct where they overlap. Eight directions for a solid ring. */
+const BLACK_PIECE_OUTLINE = ["1px 0", "-1px 0", "0 1px", "0 -1px"]
+  .map((o) => `drop-shadow(${o} 0 #fff)`)
+  .join(" ");
 
 interface Variation {
   baseFen: string; // FEN before the user move (i.e. fens[ply])
@@ -48,7 +57,8 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
     blackAccuracy,
     openingName,
     progress: analysisProgress,
-  } = useGameAnalysis(game, mode);
+    mode: analyzedMode,
+  } = useGameAnalysis(game, mode, activePgn);
   const total = analyzedGame.moves.length;
   // Imported games come with PGN headers; the demo game uses the canned demoPlayers.
   const players = useMemo(() => {
@@ -66,12 +76,37 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
     };
   }, [analyzedGame.headers, analysisProgress.total, whiteAccuracy, blackAccuracy, openingName]);
 
+  // Once analysis settles (fresh run or cache hit), record the effort + final
+  // accuracies on the game's history entry so the recent-games list can show them.
+  useEffect(() => {
+    if (!activePgn || analysisProgress.running || analysisProgress.total === 0) return;
+    updateAnalysis(window.localStorage, activePgn, {
+      mode: analyzedMode,
+      whiteAccuracy,
+      blackAccuracy,
+    });
+  }, [
+    activePgn,
+    analyzedMode,
+    analysisProgress.running,
+    analysisProgress.total,
+    whiteAccuracy,
+    blackAccuracy,
+  ]);
+
   const [flip, setFlip] = useState(false);
   // Imported games open at the start; only the demo opens mid-game at its
   // showcase position.
   const [ply, setPly] = useState<number>(initialGame ? 0 : Math.min(demoPly, total));
   const [variation, setVariation] = useState<Variation | null>(null);
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
+  // When a back-step undoes a capture, hand the board the piece to repaint
+  // immediately (react-chessboard won't re-render it until its move animation
+  // finishes). The nonce makes repeated back-steps over the same square re-fire.
+  const [revive, setRevive] = useState<{ square: Square; piece: string; nonce: number } | null>(
+    null,
+  );
+  const reviveNonce = useRef(0);
 
   useEffect(() => {
     // The stored ply is fingerprinted to the game, so a ply saved while
@@ -91,11 +126,21 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
 
   const seek = useCallback(
     (p: number) => {
+      const target = Math.max(0, Math.min(total, p));
+      // Stepping back exactly one move over a capture: tell the board to paint
+      // the recaptured piece at once, so it doesn't blink in after the glide.
+      if (target === ply - 1) {
+        const undone = analyzedGame.moves[ply - 1];
+        if (undone?.cap) {
+          const code = pieceCodeAt(analyzedGame.fens[target], undone.to);
+          if (code) setRevive({ square: undone.to, piece: code, nonce: ++reviveNonce.current });
+        }
+      }
       setVariation(null);
       setSelectedSquare(null);
-      setPly(Math.max(0, Math.min(total, p)));
+      setPly(target);
     },
-    [total],
+    [total, ply, analyzedGame],
   );
 
   const onPieceDrop = useCallback(
@@ -158,6 +203,31 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
 
   const curMove: Move | null = variation ? null : ply > 0 ? analyzedGame.moves[ply - 1] : null;
   const positionFen = variation ? variation.fen : analyzedGame.fens[ply];
+  // The opening: don't suggest a "best move" (arrow or line) for either side's
+  // first move — ply 0 (White to move) and ply 1 (Black to move).
+  const atOpening = !variation && ply <= 1;
+
+  // Per-side clocks at the current ply, when the PGN carried clock annotations.
+  const hasClocks = analyzedGame.moves.some((m) => m.clock !== undefined);
+  const clockBase = timeControlBaseSeconds(analyzedGame.headers.TimeControl);
+  const clockFor = (color: "w" | "b"): string | undefined => {
+    if (!hasClocks) return undefined;
+    const sec =
+      clockAtPly(analyzedGame.moves, ply, color) ??
+      clockBase ??
+      analyzedGame.moves.find((m) => m.c === color && m.clock !== undefined)?.clock;
+    return sec !== undefined ? formatClock(sec) : undefined;
+  };
+  const whiteClock = clockFor("w");
+  const blackClock = clockFor("b");
+
+  // Captured pieces + point advantage at the current position. White captures
+  // black pieces (rendered as black icons) and vice versa.
+  const material = useMemo(() => computeMaterial(positionFen), [positionFen]);
+  const whiteCaptured = material.capturedByWhite.map((t) => `b${t.toUpperCase()}`);
+  const blackCaptured = material.capturedByBlack.map((t) => `w${t.toUpperCase()}`);
+  const whiteAdvantage = Math.max(0, material.advantage);
+  const blackAdvantage = Math.max(0, -material.advantage);
 
   // Legal-move dots: only when the user has selected a piece.
   const legalTargets = useMemo<{ square: Square; capture: boolean }[]>(() => {
@@ -207,12 +277,27 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
   const liveEvalEnabled = !analysisProgress.running;
   const engineEval = useEngineEval(positionFen, 20, liveEvalEnabled);
 
-  // Best-move arrow from the engine's PV[0], e.g. "e2e4" → { from: "e2", to: "e4" }.
-  const bestArrow = useMemo<{ from: Square; to: Square } | null>(() => {
+  // The engine's best move jumps around as the search deepens. Only draw the
+  // arrow once it has held steady for a beat, so it stops flickering; clear it
+  // immediately when the position changes (bestUci goes undefined) so no stale
+  // arrow lingers on the new position.
+  const [stableBestUci, setStableBestUci] = useState<string | undefined>(undefined);
+  useEffect(() => {
     const u = engineEval.bestUci;
-    if (!u || u.length < 4) return null;
-    return { from: u.slice(0, 2) as Square, to: u.slice(2, 4) as Square };
+    if (!u) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot clear when the position changes
+      setStableBestUci(undefined);
+      return;
+    }
+    const t = setTimeout(() => setStableBestUci(u), 700);
+    return () => clearTimeout(t);
   }, [engineEval.bestUci]);
+
+  // Best-move arrow from the (settled) engine PV[0], e.g. "e2e4" → { from: "e2", to: "e4" }.
+  const bestArrow = useMemo<{ from: Square; to: Square } | null>(() => {
+    if (!stableBestUci || stableBestUci.length < 4) return null;
+    return { from: stableBestUci.slice(0, 2) as Square, to: stableBestUci.slice(2, 4) as Square };
+  }, [stableBestUci]);
   // Prefer live engine numbers; fall back to the move's pre-baked annotation
   // while the engine is still warming up on a new position.
   const curEval = engineEval.hasResult
@@ -220,6 +305,22 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
     : curMove
       ? { cp: curMove.cp, mate: curMove.mate }
       : { cp: 12 };
+
+  // On a delivered checkmate the engine reports an unsigned `mate 0`, so the
+  // eval bar can't tell who won. Resolve it from the position: the side to move
+  // is the mated one, so the other side wins (full bar in their colour).
+  const checkmate = useMemo(() => {
+    try {
+      return new Chess(positionFen).isCheckmate();
+    } catch {
+      return false;
+    }
+  }, [positionFen]);
+  const checkmateShare = checkmate
+    ? positionFen.split(" ")[1] === "w"
+      ? 0 // White to move and mated → Black won (bar fully Black)
+      : 1 // Black to move and mated → White won (bar fully White)
+    : undefined;
 
   // Best line numbering: side-to-move + fullmove number come straight from FEN.
   const fenParts = positionFen.split(" ");
@@ -251,7 +352,7 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
   const railWidth = 360;
   const sidebarWidth = 72;
   const graphHeight = 110;
-  const evalBarWidth = 22;
+  const evalBarWidth = 28;
   const boardGap = 12;
   const wrapBreakpoint = 980;
   const [boardSize, setBoardSize] = useState(560);
@@ -302,9 +403,17 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
           <PlayerStrip
             player={flip ? players.white : players.black}
             width={boardColumnWidth}
+            clock={flip ? whiteClock : blackClock}
+            captured={flip ? whiteCaptured : blackCaptured}
+            advantage={flip ? whiteAdvantage : blackAdvantage}
           />
           <div className="flex items-stretch gap-3">
-            <EvalBar cp={curEval.cp} mate={curEval.mate} height={boardSize} />
+            <EvalBar
+              cp={checkmate ? undefined : curEval.cp}
+              mate={checkmate ? 0 : curEval.mate}
+              share={checkmateShare}
+              height={boardSize}
+            />
             <Board
               position={positionFen}
               size={boardSize}
@@ -315,7 +424,8 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
               moveClass={curMove?.cls ?? null}
               selectedSquare={selectedSquare}
               legalTargets={legalTargets}
-              bestArrow={bestArrow}
+              bestArrow={atOpening ? null : bestArrow}
+              revive={revive}
               onPieceDrop={onPieceDrop}
               onSquareClick={onSquareClick}
             />
@@ -323,6 +433,9 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
           <PlayerStrip
             player={flip ? players.black : players.white}
             width={boardColumnWidth}
+            clock={flip ? blackClock : whiteClock}
+            captured={flip ? blackCaptured : whiteCaptured}
+            advantage={flip ? blackAdvantage : whiteAdvantage}
           />
           <EvalGraph
             moves={analyzedGame.moves}
@@ -368,15 +481,17 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
           )}
           <ClassBar move={curMove} showLegend={ply === 0 || curMove?.cls === "brilliant"} />
           <BestLine
-            sanLine={engineEval.pvSan}
+            sanLine={atOpening ? [] : engineEval.pvSan}
             startNumber={startNumber}
             startColor={stm}
             emptyLabel={
-              engineEval.hasResult
-                ? "End of game."
-                : liveEvalEnabled
-                  ? "Thinking…"
-                  : "Waiting for game analysis…"
+              atOpening
+                ? "Best line hidden for the opening moves."
+                : engineEval.hasResult
+                  ? "End of game."
+                  : liveEvalEnabled
+                    ? "Thinking…"
+                    : "Waiting for game analysis…"
             }
           />
           <MoveList moves={analyzedGame.moves} ply={ply} onSeek={seek} />
@@ -396,9 +511,18 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
 function PlayerStrip({
   player,
   width,
+  clock,
+  captured,
+  advantage,
 }: {
   player: { name: string; rating: number | null; side: "White" | "Black" };
   width: number;
+  /** Formatted clock for this player at the current ply, when the game has clocks. */
+  clock?: string;
+  /** Piece codes (e.g. "bP") this player has captured, cheapest first. */
+  captured?: string[];
+  /** This player's material lead in points; 0 when not ahead. */
+  advantage?: number;
 }) {
   const isWhite = player.side === "White";
   return (
@@ -408,7 +532,7 @@ function PlayerStrip({
         style={{ background: isWhite ? "oklch(0.95 0.005 288)" : "oklch(0.18 0.02 288)" }}
         aria-hidden
       />
-      <div className="min-w-0 truncate text-[13px] font-medium text-text">
+      <div className="min-w-0 max-w-[40%] truncate text-[13px] font-medium text-text">
         {player.name}
       </div>
       {player.rating !== null && (
@@ -416,8 +540,75 @@ function PlayerStrip({
           {player.rating}
         </span>
       )}
+      {captured && captured.length > 0 && (
+        <span className="flex shrink-0 items-center">
+          {captured.map((code, i) => {
+            // Overlap repeats of the same piece (offset enough to still count
+            // them); leave a small gap when the piece type changes.
+            const marginLeft = i === 0 ? 0 : captured[i - 1] === code ? "-10px" : "2px";
+            return (
+              <span key={i} className="h-[15px] w-[15px]" style={{ marginLeft }}>
+                {/* Render at 2x with a 1px outline, then scale to 0.5 so the
+                    outline reads ~0.5px (sub-pixel drop-shadows don't render). */}
+                <span
+                  style={{
+                    display: "block",
+                    width: "30px",
+                    height: "30px",
+                    transform: "scale(0.5)",
+                    transformOrigin: "top left",
+                    filter: code[0] === "b" ? BLACK_PIECE_OUTLINE : undefined,
+                  }}
+                >
+                  {defaultPieces[code]?.({ svgStyle: { width: "100%", height: "100%" } })}
+                </span>
+              </span>
+            );
+          })}
+        </span>
+      )}
+      {advantage !== undefined && advantage > 0 && (
+        <span className="shrink-0 text-[11.5px] font-semibold tabular-nums text-text-2">
+          +{advantage}
+        </span>
+      )}
+      {clock !== undefined && (
+        <span
+          className={`ml-auto shrink-0 rounded-[5px] border px-2 py-[3px] font-mono text-[13px] tabular-nums ${
+            isWhite
+              ? "border-line-2 bg-[oklch(0.95_0.005_288)] text-[oklch(0.18_0.02_288)]"
+              : "border-line-2 bg-[oklch(0.18_0.02_288)] text-[oklch(0.95_0.005_288)]"
+          }`}
+        >
+          {clock}
+        </span>
+      )}
     </div>
   );
+}
+
+/** Time-control base (seconds) from a PGN `TimeControl` header, if it has one. */
+function timeControlBaseSeconds(tc: string | undefined): number | undefined {
+  if (!tc || tc === "-" || tc.includes("/")) return undefined;
+  const m = tc.match(/^(\d+)/);
+  return m ? Number(m[1]) : undefined;
+}
+
+/** Clock (seconds) for `color` as of `ply` — the last move that side made by then. */
+function clockAtPly(moves: Move[], ply: number, color: "w" | "b"): number | undefined {
+  for (let i = Math.min(ply, moves.length) - 1; i >= 0; i--) {
+    if (moves[i].c === color && moves[i].clock !== undefined) return moves[i].clock;
+  }
+  return undefined;
+}
+
+/** Format seconds as h:mm:ss (dropping the hour when zero). */
+function formatClock(s: number): string {
+  const sec = Math.max(0, Math.floor(s));
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const ss = String(sec % 60).padStart(2, "0");
+  return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${ss}` : `${m}:${ss}`;
 }
 
 function AnalysisProgress({ done, total }: { done: number; total: number }) {
@@ -432,14 +623,20 @@ function AnalysisProgress({ done, total }: { done: number; total: number }) {
           {done} / {total}
         </span>
       </div>
-      <div className="h-1 overflow-hidden rounded-full bg-bg-3">
+      <div className="h-2.5 overflow-hidden rounded-full bg-bg-3">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-accent to-accent-bright transition-[width] duration-200"
+          className="h-full rounded-full bg-white transition-[width] duration-200"
           style={{ width: `${pct}%` }}
         />
       </div>
     </div>
   );
+}
+
+/** react-chessboard piece code (e.g. "bQ") for the piece on `square`, or null. */
+function pieceCodeAt(fen: string, square: Square): string | null {
+  const p = new Chess(fen).get(square as never);
+  return p ? `${p.color}${p.type.toUpperCase()}` : null;
 }
 
 function findKingSquare(chess: Chess, color: "w" | "b"): Square | null {

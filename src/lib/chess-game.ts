@@ -13,6 +13,13 @@ function moveOrNull(
   }
 }
 
+/** Parse a PGN `[%clk H:MM:SS(.f)]` value into whole seconds (NaN if malformed). */
+export function clockToSeconds(clk: string): number {
+  const parts = clk.split(":").map(Number);
+  if (parts.length === 0 || parts.some((n) => Number.isNaN(n))) return NaN;
+  return Math.floor(parts.reduce((acc, p) => acc * 60 + p, 0));
+}
+
 export interface AnalysisGame {
   moves: Move[];
   fens: string[]; // length moves.length + 1; fens[0] = starting fen
@@ -50,6 +57,10 @@ export function parsePgn(pgn: string): AnalysisGame {
   const history = chess.history({ verbose: true });
   const headers = chess.getHeaders() as Record<string, string>;
 
+  // Clock annotations appear once per ply in document (move) order, so the
+  // i-th `[%clk]` belongs to the i-th half-move.
+  const clocks = [...pgn.matchAll(/\[%clk\s+([0-9:.]+)\]/gi)].map((m) => clockToSeconds(m[1]));
+
   const startingFen = headers.FEN ?? DEFAULT_POSITION;
   const replay = new Chess(startingFen);
   const fens: string[] = [replay.fen()];
@@ -61,6 +72,7 @@ export function parsePgn(pgn: string): AnalysisGame {
     const color = h.color === "w" ? "w" : "b";
     const isCheck = h.san.endsWith("+");
     const isMate = h.san.endsWith("#");
+    const clock = clocks[i];
     moves.push({
       n: moveNumber,
       c: color,
@@ -72,6 +84,7 @@ export function parsePgn(pgn: string): AnalysisGame {
       cap: h.isCapture(),
       check: isCheck || isMate,
       mateMove: isMate,
+      clock: clock !== undefined && !Number.isNaN(clock) ? clock : undefined,
     });
     replay.move({ from: h.from, to: h.to, promotion: h.promotion });
     fens.push(replay.fen());

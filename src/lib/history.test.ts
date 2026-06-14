@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { clearHistory, loadHistory, recordAnalysis, type HistoryEntry } from "./history";
+import {
+  clearHistory,
+  loadHistory,
+  recordAnalysis,
+  updateAnalysis,
+  type HistoryEntry,
+} from "./history";
 
 function memoryStorage(): Storage {
   const map = new Map<string, string>();
@@ -54,6 +60,24 @@ describe("history store", () => {
     recordAnalysis(s, entry());
     clearHistory(s);
     expect(loadHistory(s)).toEqual([]);
+  });
+
+  it("merges mode and accuracies into an existing entry, preserving order", () => {
+    const s = memoryStorage();
+    recordAnalysis(s, entry({ pgn: "g1" }));
+    recordAnalysis(s, entry({ pgn: "g2" }));
+    updateAnalysis(s, "g1", { mode: "deep", whiteAccuracy: 91.2, blackAccuracy: 84.5 });
+    const list = loadHistory(s);
+    expect(list.map((e) => e.pgn)).toEqual(["g2", "g1"]); // order unchanged
+    const g1 = list.find((e) => e.pgn === "g1");
+    expect(g1).toMatchObject({ mode: "deep", whiteAccuracy: 91.2, blackAccuracy: 84.5 });
+  });
+
+  it("updateAnalysis is a no-op for an unknown game", () => {
+    const s = memoryStorage();
+    recordAnalysis(s, entry({ pgn: "g1" }));
+    updateAnalysis(s, "missing", { mode: "fast", whiteAccuracy: 50, blackAccuracy: 50 });
+    expect(loadHistory(s).find((e) => e.pgn === "g1")?.mode).toBeUndefined();
   });
 
   it("returns [] on corrupt data and ignores write failures", () => {

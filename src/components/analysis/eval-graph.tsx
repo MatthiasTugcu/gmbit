@@ -116,7 +116,7 @@ export function EvalGraph({ moves, ply, width, height, onSeek }: Props) {
         <path
           d={linePath}
           fill="none"
-          stroke="var(--accent-bright)"
+          stroke="white"
           strokeWidth="1.6"
           strokeLinejoin="round"
         />
@@ -146,7 +146,7 @@ export function EvalGraph({ moves, ply, width, height, onSeek }: Props) {
           y1={PAD_Y - 6}
           x2={pts[ply][0]}
           y2={chartH - PAD_Y + 6}
-          stroke="var(--accent-bright)"
+          stroke="white"
           strokeWidth="1.5"
           pointerEvents="none"
         />
@@ -155,7 +155,7 @@ export function EvalGraph({ moves, ply, width, height, onSeek }: Props) {
           cy={pts[ply][1]}
           r="5.5"
           fill="var(--bg-1)"
-          stroke="var(--accent-bright)"
+          stroke="white"
           strokeWidth="2.4"
           pointerEvents="none"
         />

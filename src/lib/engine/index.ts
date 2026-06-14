@@ -43,6 +43,9 @@ export interface AnalyzeOptions {
   movetime?: number;
   /** Number of engine lines to search (UCI MultiPV). Default 1. */
   multiPv?: number;
+  /** Stockfish search threads. Only applied when the threaded build is in use
+   * (a cross-origin-isolated context); ignored otherwise. Default 1. */
+  threads?: number;
   /** Called for each intermediate `info` line (line 1 only). */
   onProgress?: (info: AnalysisInfo) => void;
   /** Abort signal — calling abort() cancels the analysis. */
@@ -60,7 +63,18 @@ export interface Engine {
   ready(): Promise<void>;
 }
 
-const STOCKFISH_URL = "/engine/stockfish-18-lite-single.js";
+/**
+ * The multi-threaded build needs SharedArrayBuffer, which is only available in
+ * a cross-origin-isolated document (COOP/COEP headers, set on /analyze). When
+ * that's missing — other routes, or a browser/context without isolation — fall
+ * back to the single-threaded build so analysis still runs.
+ */
+function engineUrl(): { url: string; threaded: boolean } {
+  const isolated = typeof crossOriginIsolated !== "undefined" && crossOriginIsolated;
+  return isolated
+    ? { url: "/engine/stockfish-18-lite.js", threaded: true }
+    : { url: "/engine/stockfish-18-lite-single.js", threaded: false };
+}
 
 type Pending = {
   fen: string;
@@ -74,9 +88,11 @@ type Pending = {
 };
 
 export function createEngine(): Engine {
-  const worker = new Worker(STOCKFISH_URL);
+  const { url, threaded } = engineUrl();
+  const worker = new Worker(url);
   let current: Pending | null = null;
   let lastMultiPv = 1;
+  let lastThreads = 1;
 
   let resolveReady: () => void = () => {};
   const readyPromise: Promise<void> = new Promise((r) => {
@@ -213,6 +229,12 @@ export function createEngine(): Engine {
         if (multiPv !== lastMultiPv) {
           send(`setoption name MultiPV value ${multiPv}`);
           lastMultiPv = multiPv;
+        }
+        // Threads only help (and only exist) on the threaded build.
+        const threads = threaded ? Math.max(1, opts.threads ?? 1) : 1;
+        if (threads !== lastThreads) {
+          send(`setoption name Threads value ${threads}`);
+          lastThreads = threads;
         }
         send("ucinewgame");
         send(`position fen ${fen}`);

@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import type { AnalysisGame } from "@/lib/chess-game";
 import type { Move } from "@/types/analysis";
 import {
-  ACCURACY_HOPELESS,
   accMoverWinrate,
   classifyMove,
+  decidedForAccuracy,
   gameAccuracy,
   moveAccuracy,
   type MoveAccEntry,
@@ -18,6 +18,7 @@ import { isSacrifice } from "@/lib/analysis/sacrifice";
 import { createEngine, type AnalysisInfo, type Engine } from "./index";
 import { mapPool } from "./pool";
 import type { AnalysisMode } from "@/types/analysis";
+import { ANALYSIS_CACHE_VERSION, loadAnalysis, saveAnalysis } from "@/lib/analysis-cache";
 
 interface ModeConfig {
   baseDepth: number;
@@ -42,10 +43,17 @@ export function searchTotal(fenCount: number, targetCount: number, mode: Analysi
   return fenCount + (MODE_CONFIG[mode].refineDepth === null ? 0 : targetCount);
 }
 
-/** Engine workers analysing in parallel. Each is a single-threaded WASM
- * Stockfish, so the pool scales with cores; leave headroom for the UI. */
+/** Engine workers analysing different positions in parallel; the pool scales
+ * with cores, leaving headroom for the UI. */
 const POOL_LANES = () =>
   Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 4) - 2));
+
+/** Search threads handed to each engine. The pool already parallelises across
+ * positions, so this gives each lane the leftover cores — letting the threaded
+ * build reach higher depth per position within the movetime cap. The single
+ * build ignores it. First-cut split; tunable in Phase 2. */
+const THREADS_PER_ENGINE = (lanes: number) =>
+  Math.max(1, Math.floor(((navigator.hardwareConcurrency || 4) - 1) / lanes));
 
 export interface GameAnalysisProgress {
   done: number;
@@ -59,6 +67,8 @@ export interface GameAnalysisResult {
   blackAccuracy: number;
   openingName: string | null;
   progress: GameAnalysisProgress;
+  /** Effort the shown result reflects — the cached mode on a cache hit, else the requested mode. */
+  mode: AnalysisMode;
 }
 
 /** Convert a side-to-move engine result into a white-positive PositionEval. */
@@ -123,8 +133,8 @@ function annotate(
     const wBefore = accMoverWinrate(m.c, before.lines[0].score);
     const wAfter = accMoverWinrate(m.c, afterScore);
     const loss = Math.max(0, wBefore - wAfter);
-    const hopeless = wBefore < ACCURACY_HOPELESS && wAfter < ACCURACY_HOPELESS;
-    accEntries.push({ color: m.c, acc: moveAccuracy(loss), excluded: isBook || hopeless });
+    const decided = decidedForAccuracy(wBefore, wAfter);
+    accEntries.push({ color: m.c, acc: moveAccuracy(loss), excluded: isBook || decided });
   }
 
   const { white, black } = gameAccuracy(accEntries);
@@ -156,11 +166,15 @@ function refinementTargets(game: AnalysisGame, book: BookInfo): number[] {
 export function useGameAnalysis(
   game: AnalysisGame,
   mode: AnalysisMode = "deep",
+  /** PGN to cache the result under; a cache hit skips the engine entirely. */
+  cacheKey?: string,
 ): GameAnalysisResult {
   const [annotated, setAnnotated] = useState<AnalysisGame>(game);
   const [accuracy, setAccuracy] = useState({ white: 0, black: 0 });
   const [openingName, setOpeningName] = useState<string | null>(null);
   const [progress, setProgress] = useState({ done: 0, total: game.moves.length });
+  // The mode the shown result reflects: a cache hit can differ from the request.
+  const [usedMode, setUsedMode] = useState<AnalysisMode>(mode);
 
   useEffect(() => {
     // Reset-on-game-change: React batches these into one render; the linter's
@@ -170,6 +184,7 @@ export function useGameAnalysis(
     setAccuracy({ white: 0, black: 0 });
     setOpeningName(null);
     setProgress({ done: 0, total: game.moves.length });
+    setUsedMode(mode);
 
     if (typeof window === "undefined") return;
     if (game.moves.length === 0) return;
@@ -177,6 +192,22 @@ export function useGameAnalysis(
     if (game.moves.every((m) => m.cp !== undefined || m.mate !== undefined)) {
       setProgress({ done: game.moves.length, total: game.moves.length });
       return;
+    }
+
+    // Previously analysed game: restore the cached result and skip the engine
+    // only when it was analysed with the exact model now selected. Selecting a
+    // different model re-runs the engine and overwrites the cache below — so
+    // re-opening a recent game with a changed model re-analyses it.
+    if (cacheKey) {
+      const cached = loadAnalysis(window.localStorage, cacheKey);
+      if (cached && cached.mode === mode) {
+        setAnnotated((cur) => ({ ...cur, moves: cached.moves }));
+        setAccuracy({ white: cached.whiteAccuracy, black: cached.blackAccuracy });
+        setOpeningName(cached.openingName);
+        setUsedMode(cached.mode);
+        setProgress({ done: game.moves.length, total: game.moves.length });
+        return;
+      }
     }
 
     let cancelled = false;
@@ -200,7 +231,9 @@ export function useGameAnalysis(
         let done = 0;
         setProgress({ done, total: totalSearches });
 
-        for (let i = 0; i < POOL_LANES(); i++) engines.push(createEngine());
+        const lanes = POOL_LANES();
+        const threads = THREADS_PER_ENGINE(lanes);
+        for (let i = 0; i < lanes; i++) engines.push(createEngine());
         await Promise.all(engines.map((e) => e.ready()));
         const positions: (PositionEval | undefined)[] = new Array(game.fens.length);
 
@@ -217,6 +250,7 @@ export function useGameAnalysis(
               depth,
               multiPv: cfg.multiPv,
               movetime,
+              threads,
             });
             if (cancelled) return;
             positions[idx] = toPositionEval(game.fens[idx], info);
@@ -235,6 +269,20 @@ export function useGameAnalysis(
         // Analysis is finished — free the workers without waiting for the
         // next game change or unmount.
         destroyEngines();
+
+        // Cache the completed result so re-opening this game skips the engine.
+        if (!cancelled && cacheKey) {
+          const final = annotate(game, positions, book);
+          saveAnalysis(window.localStorage, {
+            pgn: cacheKey,
+            mode,
+            moves: final.moves,
+            whiteAccuracy: final.white,
+            blackAccuracy: final.black,
+            openingName: book.openingName,
+            version: ANALYSIS_CACHE_VERSION,
+          });
+        }
       } catch (err) {
         // Aborts / teardown land here — stay silent for those; surface real bugs.
         if (!cancelled) console.error("game analysis failed:", err);
@@ -245,7 +293,7 @@ export function useGameAnalysis(
       cancelled = true;
       destroyEngines();
     };
-  }, [game, mode]);
+  }, [game, mode, cacheKey]);
 
   return {
     game: annotated,
@@ -257,5 +305,6 @@ export function useGameAnalysis(
       total: progress.total,
       running: progress.done < progress.total,
     },
+    mode: usedMode,
   };
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { clearPendingPgn, savePendingMeta, savePendingMode } from "@/lib/pending-game";
 
 /**
@@ -8,12 +7,14 @@ import { clearPendingPgn, savePendingMeta, savePendingMode } from "@/lib/pending
  * back to its built-in demo, which is pre-annotated (no engine run needed).
  */
 export function TryExampleButton() {
-  const router = useRouter();
   const open = () => {
     clearPendingPgn(window.sessionStorage);
     savePendingMode(window.sessionStorage, "deep");
     savePendingMeta(window.sessionStorage, { source: "demo" });
-    router.push("/analyze");
+    // Full navigation (not router.push) so /analyze loads with its COOP/COEP
+    // headers and becomes cross-origin-isolated — required for the threaded
+    // engine's SharedArrayBuffer. An SPA push keeps the un-isolated home doc.
+    window.location.assign("/analyze");
   };
   return (
     <button

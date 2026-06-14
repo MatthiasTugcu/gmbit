@@ -113,6 +113,9 @@ export function useEngineEval(fen: string, depth = 20, enabled = true): EngineEv
     engine
       .analyze(fen, {
         depth,
+        // Live eval owns the CPU (game analysis is paused while it runs), so the
+        // single engine takes most cores. No-op on the single-threaded build.
+        threads: Math.max(1, (navigator.hardwareConcurrency || 4) - 1),
         signal: controller.signal,
         onProgress: update,
       })
