@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GmbitLogo } from "@/components/logo";
+import { Wordmark } from "@/components/wordmark";
 import { FetchPanel } from "@/components/landing/fetch-panel";
+import { SideSquare } from "@/components/landing/side-square";
+import { NewsPanel } from "@/components/landing/news-panel";
+import { timeControlLabel } from "@/lib/time-control";
+import { TimeControlIcon } from "@/components/landing/time-control-icon";
 import { parsePgn } from "@/lib/chess-game";
 import { fetchRecentGames } from "@/lib/chesscom";
 import { fetchLichessGames } from "@/lib/lichess";
@@ -21,10 +26,15 @@ const SOURCE_LABEL: Record<HistorySource, string> = {
   demo: "Demo",
 };
 
+const MODE_LABEL: Record<AnalysisMode, string> = {
+  fast: "Fast",
+  deep: "In-depth",
+};
+
 export function LandingScreen() {
   const router = useRouter();
   const [source, setSource] = useState<Source | null>(null);
-  const [mode, setMode] = useState<AnalysisMode>("deep");
+  const [mode, setMode] = useState<AnalysisMode>("fast");
   const [pgn, setPgn] = useState("");
   const [pgnError, setPgnError] = useState<string | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -79,64 +89,21 @@ export function LandingScreen() {
         </Link>
       </div>
       <main className="flex flex-1 flex-col items-center justify-center px-6 py-14">
-        <div className="flex w-full max-w-[640px] flex-col items-center">
+        <div className="mx-auto flex w-full max-w-[1320px] items-start justify-center gap-10">
+          {/* Empty left rail mirrors the news rail so the centre column stays centred. */}
+          <div className="hidden w-[300px] shrink-0 xl:block" aria-hidden />
+          <div className="flex w-full max-w-[640px] flex-col items-center">
           {/* Brand */}
           <GmbitLogo size={88} />
-          <h1 className="mt-3 text-[40px] font-extrabold tracking-tight text-text">
-            gmbit
+          <h1 className="mt-3">
+            <Wordmark className="text-[40px] font-extrabold tracking-tight" />
           </h1>
           <p className="mt-1.5 text-center text-[14px] text-text-2">
-            Free game analysis with engine evaluation — right in your browser.
+            The best game analysis engine - running in your browser.
           </p>
 
-          {/* Source picker */}
-          <div className="mt-9 grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
-            <SourceCard
-              selected={source === "chesscom"}
-              onClick={() => setSource("chesscom")}
-              icon={
-                <svg viewBox="0 0 45 45" className="h-5 w-5" aria-hidden>
-                  <path
-                    d="m 22.5,9 c -2.21,0 -4,1.79 -4,4 0,0.89 0.29,1.71 0.78,2.38 C 17.33,16.5 16,18.59 16,21 c 0,2.03 0.94,3.84 2.41,5.03 C 15.41,27.09 11,31.58 11,39.5 H 34 C 34,31.58 29.59,27.09 26.59,26.03 28.06,24.84 29,23.03 29,21 29,18.59 27.67,16.5 25.72,15.38 26.21,14.71 26.5,13.89 26.5,13 c 0,-2.21 -1.79,-4 -4,-4 z"
-                    fill="#81b64c"
-                    stroke="oklch(0.30 0.05 135)"
-                    strokeWidth={1.5}
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              }
-              title="Fetch from Chess.com"
-              description="Pull your recent games with just a username."
-            />
-            <SourceCard
-              selected={source === "pgn"}
-              onClick={() => setSource("pgn")}
-              icon={
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-amber-300">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="8" y1="13" x2="16" y2="13" />
-                  <line x1="8" y1="17" x2="13" y2="17" />
-                </svg>
-              }
-              title="Import a PGN"
-              description="Paste a game in PGN notation from any source."
-            />
-            <SourceCard
-              selected={source === "lichess"}
-              onClick={() => setSource("lichess")}
-              icon={
-                <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-text">
-                  <path d="M12 2l2 5 5 1-4 3 1.5 6L12 14l-4.5 3L9 11 5 8l5-1 2-5z" />
-                </svg>
-              }
-              title="Fetch from Lichess"
-              description="Pull your recent games with just a username."
-            />
-          </div>
-
           {/* Analysis mode picker */}
-          <div className="mt-3 grid w-full grid-cols-2 gap-3">
+          <div className="mt-9 grid w-full grid-cols-2 gap-3">
             <ModeButton
               selected={mode === "fast"}
               onClick={() => setMode("fast")}
@@ -157,6 +124,52 @@ export function LandingScreen() {
                 </svg>
               }
               label="In-depth analysis"
+            />
+          </div>
+
+          {/* Source picker */}
+          <div className="mt-3 grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
+            <SourceCard
+              selected={source === "chesscom"}
+              onClick={() => setSource("chesscom")}
+              icon={
+                <svg viewBox="0 0 45 45" className="h-5 w-5" aria-hidden>
+                  <path
+                    d="m 22.5,9 c -2.21,0 -4,1.79 -4,4 0,0.89 0.29,1.71 0.78,2.38 C 17.33,16.5 16,18.59 16,21 c 0,2.03 0.94,3.84 2.41,5.03 C 15.41,27.09 11,31.58 11,39.5 H 34 C 34,31.58 29.59,27.09 26.59,26.03 28.06,24.84 29,23.03 29,21 29,18.59 27.67,16.5 25.72,15.38 26.21,14.71 26.5,13.89 26.5,13 c 0,-2.21 -1.79,-4 -4,-4 z"
+                    fill="#81b64c"
+                    stroke="oklch(0.30 0.05 135)"
+                    strokeWidth={1.5}
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              }
+              title="Fetch from Chess.com"
+              description="Pull your recent games with just a username."
+            />
+            <SourceCard
+              selected={source === "lichess"}
+              onClick={() => setSource("lichess")}
+              icon={
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-text">
+                  <path d="M12 2l2 5 5 1-4 3 1.5 6L12 14l-4.5 3L9 11 5 8l5-1 2-5z" />
+                </svg>
+              }
+              title="Fetch from Lichess"
+              description="Pull your recent games with just a username."
+            />
+            <SourceCard
+              selected={source === "pgn"}
+              onClick={() => setSource("pgn")}
+              icon={
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-amber-300">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="8" y1="13" x2="16" y2="13" />
+                  <line x1="8" y1="17" x2="13" y2="17" />
+                </svg>
+              }
+              title="Import a PGN"
+              description="Paste a game in PGN notation from any source."
             />
           </div>
 
@@ -229,28 +242,54 @@ export function LandingScreen() {
               </div>
               <ul className="divide-y divide-line overflow-hidden rounded-md border border-line bg-bg-1">
                 {history.map((entry) => (
-                  <li key={entry.pgn} className="flex items-center gap-2.5 px-3 py-2">
-                    <span className="w-[44px] shrink-0 text-[10.5px] font-semibold tracking-wide text-text-3">
-                      {SOURCE_LABEL[entry.source]}
-                    </span>
+                  <li key={entry.pgn}>
                     <button
                       type="button"
                       onClick={() => reopen(entry)}
-                      className="min-w-0 flex-1 truncate text-left text-[12.5px] text-text hover:text-accent-bright"
+                      className="flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-bg-3"
                     >
-                      {entry.white} <span className="text-text-3">vs</span> {entry.black}
+                      <span className="w-[64px] shrink-0 truncate text-[10.5px] font-semibold tracking-wide text-text-3">
+                        {SOURCE_LABEL[entry.source]}
+                      </span>
+                      {timeControlLabel(entry.pgn) && (
+                        <span className="inline-flex shrink-0 items-center gap-1 rounded-[4px] border border-line bg-bg-2 px-1.5 py-px text-[10px] font-medium text-text-3">
+                          <TimeControlIcon pgn={entry.pgn} />
+                          {timeControlLabel(entry.pgn)}
+                        </span>
+                      )}
+                      <span className="min-w-0 flex-1 truncate text-[12.5px] text-text">
+                        <SideSquare side="white" />
+                        {entry.white} <span className="text-text-3">vs</span>{" "}
+                        <SideSquare side="black" />
+                        {entry.black}
+                      </span>
+                      {entry.mode && (
+                        <span className="shrink-0 rounded-[4px] border border-line bg-bg-2 px-1.5 py-px text-[10px] font-medium text-text-2">
+                          {MODE_LABEL[entry.mode]}
+                        </span>
+                      )}
+                      {entry.whiteAccuracy !== undefined && entry.blackAccuracy !== undefined && (
+                        <span className="flex shrink-0 items-center gap-1">
+                          <AccuracySquare side="white" value={entry.whiteAccuracy} />
+                          <AccuracySquare side="black" value={entry.blackAccuracy} />
+                        </span>
+                      )}
+                      <span className="shrink-0 text-[11px] tabular-nums text-text-3">
+                        {new Date(entry.date).toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </span>
                     </button>
-                    <span className="shrink-0 text-[11px] tabular-nums text-text-3">
-                      {new Date(entry.date).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </span>
                   </li>
                 ))}
               </ul>
             </div>
           )}
+          </div>
+          <aside className="hidden w-[300px] shrink-0 xl:block">
+            <NewsPanel />
+          </aside>
         </div>
       </main>
 
@@ -258,9 +297,7 @@ export function LandingScreen() {
         <div className="mx-auto flex w-full max-w-[1100px] flex-wrap items-center justify-between gap-x-6 gap-y-3">
           <div className="flex items-center gap-2">
             <GmbitLogo size={22} />
-            <span className="text-[12.5px] font-semibold tracking-tight text-text">
-              gmbit
-            </span>
+            <Wordmark className="text-[14px] font-semibold tracking-tight" />
             <span className="text-[12px] text-text-3">
               — chess game analysis
             </span>
@@ -302,7 +339,7 @@ function SourceCard({
       }`}
     >
       {icon}
-      <span className="text-[13px] font-semibold tracking-tight text-text">
+      <span className="font-serious text-[13px] font-semibold tracking-tight text-text">
         {title}
       </span>
       <span className="text-[11.5px] leading-[1.5] text-text-3">{description}</span>
@@ -335,5 +372,21 @@ function ModeButton({
       {icon}
       {label}
     </button>
+  );
+}
+
+/** A per-side accuracy chip: a light square for White, a dark one for Black. */
+function AccuracySquare({ side, value }: { side: "white" | "black"; value: number }) {
+  return (
+    <span
+      title={`${side === "white" ? "White" : "Black"} accuracy`}
+      className={`flex h-[22px] items-center justify-center rounded-[4px] border border-line-2 px-1.5 text-[10.5px] font-semibold tabular-nums ${
+        side === "white"
+          ? "bg-[oklch(0.95_0.005_288)] text-[oklch(0.18_0.02_288)]"
+          : "bg-[oklch(0.18_0.02_288)] text-[oklch(0.95_0.005_288)]"
+      }`}
+    >
+      {value}%
+    </span>
   );
 }

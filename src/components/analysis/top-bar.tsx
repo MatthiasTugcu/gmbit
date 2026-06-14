@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { GmbitLogo } from "@/components/logo";
+import { Wordmark } from "@/components/wordmark";
 import type { RecentGame } from "@/lib/chesscom";
 import type { PendingFetch } from "@/lib/pending-game";
 
@@ -25,7 +26,7 @@ export function TopBar({ recentGames, activePgn, onSelectGame }: Props) {
       <div className="group absolute inset-y-0 left-0 flex w-[72px] flex-col items-center gap-4 overflow-hidden border-r border-line bg-bg-1/80 px-2 py-5 backdrop-blur-md transition-[width] duration-200 hover:w-[280px] hover:bg-bg-1">
         <Link href="/" className="flex flex-col items-center gap-2" title="gmbit home">
           <GmbitLogo size={52} />
-          <span className="text-[13px] font-semibold tracking-tight text-text">gmbit</span>
+          <Wordmark className="text-[13px] font-semibold tracking-tight" />
         </Link>
 
         {games.length > 0 && (

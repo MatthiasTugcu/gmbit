@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CLS, CLASS_ORDER } from "@/lib/classification";
 import { GmbitLogo } from "@/components/logo";
+import { Wordmark } from "@/components/wordmark";
 import { TryExampleButton } from "./try-example-button";
 
 export const metadata = {
@@ -9,11 +10,11 @@ export const metadata = {
 
 export default function FeaturesPage() {
   return (
-    <div className="app-root relative z-[1] min-h-screen overflow-y-auto">
+    <div className="app-root relative z-[1] h-screen overflow-y-auto">
       <header className="flex items-center justify-between px-7 py-4">
         <Link href="/" className="flex items-center gap-2">
           <GmbitLogo size={26} />
-          <span className="text-[14px] font-semibold tracking-tight text-text">gmbit</span>
+          <Wordmark className="text-[14px] font-semibold tracking-tight" />
         </Link>
         <Link
           href="/"
