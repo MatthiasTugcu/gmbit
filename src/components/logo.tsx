@@ -1,28 +1,32 @@
-// The gmbit queen mark (cburnett-style), shared by the top bar and landing page.
+// The gmbit queen mark — a faceted chess queen in brand magenta. The light
+// plane is --accent-bright, the dark (right/inner) plane is --accent-deep, so
+// the mark tracks the accent hue instead of hardcoding color. Shared by the
+// top bar, landing page, and features page.
 export function GmbitLogo({ size = 52 }: { size?: number }) {
   return (
     <svg
-      viewBox="0 0 45 45"
+      viewBox="0 0 64 64"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
       aria-label="gmbit"
     >
-      <g
-        fill="#ffffff"
-        stroke="#000000"
-        strokeWidth={1.5}
-        strokeLinejoin="round"
-      >
-        <path d="M 9,26 C 17.5,24.5 30,24.5 36,26 L 38.5,13.5 L 31,25 L 30.7,10.9 L 25.5,24.5 L 22.5,10 L 19.5,24.5 L 14.3,10.9 L 14,25 L 6.5,13.5 L 9,26 z" />
-        <path d="M 9,26 C 9,28 10.5,28 11.5,30 C 12.5,31.5 12.5,31 12,33.5 C 10.5,34.5 11,36 11,36 C 9.5,37.5 11,38.5 11,38.5 C 17.5,39.5 27.5,39.5 34,38.5 C 34,38.5 35.5,37.5 34,36 C 34,36 34.5,34.5 33,33.5 C 32.5,31 32.5,31.5 33.5,30 C 34.5,28 36,28 36,26 C 27.5,24.5 17.5,24.5 9,26 z" />
-        <path d="M 11.5,30 C 15,29 30,29 33.5,30" fill="none" />
-        <path d="M 12,33.5 C 18,32.5 27,32.5 33,33.5" fill="none" />
-        <circle cx="6" cy="12" r="2" />
-        <circle cx="14" cy="9" r="2" />
-        <circle cx="22.5" cy="8" r="2" />
-        <circle cx="31" cy="9" r="2" />
-        <circle cx="39" cy="12" r="2" />
+      {/* light plane — the full queen silhouette */}
+      <g fill="var(--accent-bright)">
+        <circle cx="14" cy="16" r="3.4" />
+        <circle cx="23" cy="12" r="3.4" />
+        <circle cx="32" cy="10.5" r="3.6" />
+        <circle cx="41" cy="12" r="3.4" />
+        <circle cx="50" cy="16" r="3.4" />
+        <path d="M14,18 L20,33 L23,15 L29,32 L32,13 L35,32 L41,15 L44,33 L50,18 L47,38 Q32,35 17,38 Z" />
+        <path d="M17,40 Q15,48 19,52 L45,52 Q49,48 47,40 Q32,37 17,40 Z" />
+        <path d="M14,54 Q32,51 50,54 Q53,57 50,61 L14,61 Q11,57 14,54 Z" />
+      </g>
+      {/* dark plane — the right/inner facets, giving the crystalline 3D read */}
+      <g fill="var(--accent-deep)">
+        <path d="M32,13 L35,32 L47,38 Q40,35.5 32,35 Z" />
+        <path d="M32,37 Q40,37.5 47,40 Q49,48 45,52 L32,52 Z" />
+        <path d="M32,51.5 Q41,51 50,54 Q53,57 50,61 L32,61 Z" />
       </g>
     </svg>
   );
