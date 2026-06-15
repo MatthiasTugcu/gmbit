@@ -127,6 +127,8 @@ export interface ClassifyArgs {
 }
 
 const GREAT_GAP = 12; // win% gap to 2nd line that makes a best move "the only move"
+const GREAT_SWING_GAP = 8; // smaller gap that still counts when a decisive boundary is crossed
+const GREAT_WIN = 75; // win% that counts as "winning" for the secured-win swing
 const MISS_BEFORE = 75; // win% that counts as a decisive chance
 const MISS_AFTER = 60; // dropping below this throws the chance away
 
@@ -186,9 +188,21 @@ export function classifyMove(a: ClassifyArgs): MoveClass {
 
   if (matchesBest || asGoodAsBest) {
     if (a.sacrifice() && wAfter >= 30 && wBefore <= 95) return "brilliant";
+    // chess.com V2 "Great": the move was critical to the outcome. Either it was
+    // the only good move (a large gap to the next-best line), or it preserved a
+    // decisive boundary the next-best line would have surrendered — holding at
+    // least equality (best stays >= 50% while the alternative drops below), or
+    // securing the win (best stays winning while the alternative falls back
+    // toward equal). The swing cases still need a clear gap, so a coin-flip
+    // between two near-equal lines isn't "great".
     const second = a.before.lines[1];
-    if (second && wBefore - moverWinrate(a.mover, second.score) >= GREAT_GAP) {
-      return "great";
+    if (second) {
+      const wSecond = moverWinrate(a.mover, second.score);
+      const gap = wBefore - wSecond;
+      const onlyGoodMove = gap >= GREAT_GAP;
+      const heldEquality = gap >= GREAT_SWING_GAP && wBefore >= 50 && wSecond < 50;
+      const securedWin = gap >= GREAT_SWING_GAP && wBefore >= GREAT_WIN && wSecond < GREAT_WIN;
+      if (onlyGoodMove || heldEquality || securedWin) return "great";
     }
     return "best";
   }
