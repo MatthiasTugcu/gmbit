@@ -21,12 +21,6 @@ const Book = (
   </svg>
 );
 
-const Star = (
-  <svg viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2l-6.1 3.4 1.4-6.8L2.2 9.1l6.9-.8L12 2z" />
-  </svg>
-);
-
 const Cross = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round">
     <path d="M6 6l12 12M18 6L6 18" />
@@ -43,7 +37,7 @@ export const CLS: Record<
   { label: string; sym: string; short: string; icon?: JSX.Element; ink?: string }
 > = {
   brilliant:  { label: "Brilliant",  sym: "!!",        short: "!!" },
-  great:      { label: "Great",      sym: "!",         short: "!",      icon: Star },
+  great:      { label: "Great",      sym: "!",         short: "!" },
   best:       { label: "Best move",  sym: "\u2713",    short: "\u2713", icon: Crown },
   excellent:  { label: "Excellent",  sym: "\u2713",    short: "\u2713", icon: Check, ink: INK_GREEN },
   good:       { label: "Good",       sym: "\u2713",    short: "\u2713", ink: INK_GREEN },

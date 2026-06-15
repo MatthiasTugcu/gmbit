@@ -22,8 +22,10 @@ export interface CachedAnalysis {
 
 const KEY = "gmbit.analysis-cache";
 const CAP = 15;
-/** Bump to discard caches written by an incompatible analysis format. */
-export const ANALYSIS_CACHE_VERSION = 2;
+/** Bump to discard caches written by an incompatible analysis format.
+ * v3: classification moved to the calibrated (steep) win% curve and Great was
+ * narrowed, so v2 labels are stale. */
+export const ANALYSIS_CACHE_VERSION = 3;
 
 function loadAll(storage: Storage): CachedAnalysis[] {
   try {

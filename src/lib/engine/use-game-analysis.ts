@@ -135,6 +135,9 @@ export function annotate(
           after: afterScore,
           isBook,
           sacrifice: () => isSacrifice(game.fens[i], playedUci),
+          // A move onto the square the opponent just vacated is a forced
+          // recapture — an "only move" but never a "great" one.
+          recapture: i > 0 && moves[i - 1].to === m.to,
         })
       : m.cls;
     moves[i] = { ...m, cls, cp: afterScore.cp, mate: afterScore.mate };

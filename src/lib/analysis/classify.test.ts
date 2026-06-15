@@ -143,43 +143,69 @@ describe("classifyMove ladder", () => {
     ).toBe("great");
   });
 
-  it("great: held equality where the next-best line would have lost it (gap < 12)", () => {
-    // best 54.59% vs 2nd 44.51% -> gap 10.08 (< GREAT_GAP, so not "only move"),
-    // but best stays >= 50 while the alternative drops below -> decisive swing.
+  it("great: held equality where the next-best line would have lost it", () => {
+    // steep curve: best 67.9% vs 2nd 43.8% -> gap 24.1 (>= GREAT_GAP); best holds
+    // >= 50 while the only alternative drops below -> a losing line turned equal.
     expect(
       classifyMove(
         args({
           playedUci: "e2e4",
-          before: { lines: [{ score: { cp: 50 }, uci: "e2e4" }, { score: { cp: -60 }, uci: "d2d4" }] },
-          after: { cp: 45 },
+          before: { lines: [{ score: { cp: 150 }, uci: "e2e4" }, { score: { cp: -50 }, uci: "d2d4" }] },
+          after: { cp: 145 },
         }),
       ),
     ).toBe("great");
   });
 
-  it("great: secured the win where the next-best line fell back toward equal (gap < 12)", () => {
-    // best 75.79% vs 2nd 67.22% -> gap 8.57 (< GREAT_GAP); best stays >= 75
-    // (winning) while the alternative drops below -> decisive swing.
+  it("great: secured the win where the next-best line stayed only equal", () => {
+    // steep curve: best 77.7% (winning) vs 2nd 59.9% -> gap 17.8 (>= GREAT_GAP);
+    // best secures the win the alternative would not -> an equal line turned won.
     expect(
       classifyMove(
         args({
           playedUci: "e2e4",
-          before: { lines: [{ score: { cp: 310 }, uci: "e2e4" }, { score: { cp: 195 }, uci: "d2d4" }] },
-          after: { cp: 305 },
+          before: { lines: [{ score: { cp: 250 }, uci: "e2e4" }, { score: { cp: 80 }, uci: "d2d4" }] },
+          after: { cp: 245 },
         }),
       ),
     ).toBe("great");
   });
 
-  it("best (not great): small gap and no decisive boundary crossed", () => {
-    // best 59.10% vs 2nd 55.50% -> gap 3.60 (< GREAT_SWING_GAP) and both on the
-    // same side of every boundary -> just a best move, not great.
+  it("best (not great): small gap, no decisive boundary crossed", () => {
+    // best 62.2% vs 2nd 57.4% -> gap 4.85 (< GREAT_GAP) -> just a best move.
     expect(
       classifyMove(
         args({
           playedUci: "e2e4",
           before: { lines: [{ score: { cp: 100 }, uci: "e2e4" }, { score: { cp: 60 }, uci: "d2d4" }] },
           after: { cp: 95 },
+        }),
+      ),
+    ).toBe("best");
+  });
+
+  it("best (not great): a forced recapture is an only-move but never great", () => {
+    // same decisive-swing shape as the held-equality great, but flagged recapture.
+    expect(
+      classifyMove(
+        args({
+          playedUci: "e2e4",
+          before: { lines: [{ score: { cp: 150 }, uci: "e2e4" }, { score: { cp: -50 }, uci: "d2d4" }] },
+          after: { cp: 145 },
+          recapture: true,
+        }),
+      ),
+    ).toBe("best");
+  });
+
+  it("best (not great): an only-move while already winning is just converting", () => {
+    // best 88% (> GREAT_MAX) with a huge gap to the 2nd line -> mopping up, not great.
+    expect(
+      classifyMove(
+        args({
+          playedUci: "e2e4",
+          before: { lines: [{ score: { cp: 400 }, uci: "e2e4" }, { score: { cp: -100 }, uci: "d2d4" }] },
+          after: { cp: 395 },
         }),
       ),
     ).toBe("best");
@@ -222,11 +248,11 @@ describe("classifyMove ladder", () => {
         }),
       ),
     ).toBe("inaccuracy");
-    // before cp:50->after cp:0 is ~4.59 win% loss -> good (2 <= loss < 5)
+    // before cp:35->after cp:0 is ~4.36 win% loss (steep curve) -> good (2 <= loss < 5)
     expect(
       classifyMove(
         args({
-          before: { lines: [{ score: { cp: 50 }, uci: "e2e4" }] },
+          before: { lines: [{ score: { cp: 35 }, uci: "e2e4" }] },
           after: { cp: 0 },
         }),
       ),
@@ -267,22 +293,22 @@ describe("classifyMove ladder", () => {
 
   it("inaccuracy / mistake / blunder thresholds", () => {
     const base = { lines: [{ score: { cp: 0 }, uci: "e2e4" }] };
-    // cp 0->-80: loss ~7.31 -> inaccuracy
+    // steep curve. cp 0->-80: loss ~9.9 -> inaccuracy
     expect(classifyMove(args({ before: base, after: { cp: -80 } }))).toBe("inaccuracy");
-    // cp 0->-180: loss ~15.99 -> mistake
-    expect(classifyMove(args({ before: base, after: { cp: -180 } }))).toBe("mistake");
-    // cp 0->-600: loss ~40.11 -> blunder
+    // cp 0->-150: loss ~17.9 -> mistake
+    expect(classifyMove(args({ before: base, after: { cp: -150 } }))).toBe("mistake");
+    // cp 0->-600: loss ~45.3 -> blunder
     expect(classifyMove(args({ before: base, after: { cp: -600 } }))).toBe("blunder");
   });
 
   it("newly allowing a forced mate upgrades inaccuracy to mistake", () => {
-    // before cp -700 (~7.1 win% for white) -> after mate -5 (0 win%): loss ~7.1 -> in [5,10) band.
-    // Without allowsMate the result would be "inaccuracy"; the upgrade makes it "mistake".
-    // wBefore < 75, so the miss rule does not fire.
+    // steep curve: before cp -520 (~6.9 win% for white) -> after mate -5 (0 win%):
+    // loss ~6.9 -> [5,10) band. Without allowsMate it would be "inaccuracy"; the
+    // upgrade makes it "mistake". wBefore < 75, so the miss rule does not fire.
     expect(
       classifyMove(
         args({
-          before: { lines: [{ score: { cp: -700 }, uci: "g1f1" }] },
+          before: { lines: [{ score: { cp: -520 }, uci: "g1f1" }] },
           after: { mate: -5 },
         }),
       ),
