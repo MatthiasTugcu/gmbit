@@ -75,3 +75,11 @@ export const GRAPH_MARK: Set<MoveClass> = new Set([
   "mistake",
   "blunder",
 ]);
+
+/**
+ * Classes that render no badge anywhere — only standout moves get marked.
+ * "good"/"excellent" are the unremarkable outcomes, and "good" doubles as the
+ * neutral default carried while analysis is still running, so an unanalysed or
+ * in-progress move shows nothing rather than a premature ✓.
+ */
+export const UNMARKED: Set<MoveClass> = new Set<MoveClass>(["good", "excellent"]);

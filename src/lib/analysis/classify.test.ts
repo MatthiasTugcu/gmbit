@@ -143,6 +143,48 @@ describe("classifyMove ladder", () => {
     ).toBe("great");
   });
 
+  it("great: held equality where the next-best line would have lost it (gap < 12)", () => {
+    // best 54.59% vs 2nd 44.51% -> gap 10.08 (< GREAT_GAP, so not "only move"),
+    // but best stays >= 50 while the alternative drops below -> decisive swing.
+    expect(
+      classifyMove(
+        args({
+          playedUci: "e2e4",
+          before: { lines: [{ score: { cp: 50 }, uci: "e2e4" }, { score: { cp: -60 }, uci: "d2d4" }] },
+          after: { cp: 45 },
+        }),
+      ),
+    ).toBe("great");
+  });
+
+  it("great: secured the win where the next-best line fell back toward equal (gap < 12)", () => {
+    // best 75.79% vs 2nd 67.22% -> gap 8.57 (< GREAT_GAP); best stays >= 75
+    // (winning) while the alternative drops below -> decisive swing.
+    expect(
+      classifyMove(
+        args({
+          playedUci: "e2e4",
+          before: { lines: [{ score: { cp: 310 }, uci: "e2e4" }, { score: { cp: 195 }, uci: "d2d4" }] },
+          after: { cp: 305 },
+        }),
+      ),
+    ).toBe("great");
+  });
+
+  it("best (not great): small gap and no decisive boundary crossed", () => {
+    // best 59.10% vs 2nd 55.50% -> gap 3.60 (< GREAT_SWING_GAP) and both on the
+    // same side of every boundary -> just a best move, not great.
+    expect(
+      classifyMove(
+        args({
+          playedUci: "e2e4",
+          before: { lines: [{ score: { cp: 100 }, uci: "e2e4" }, { score: { cp: 60 }, uci: "d2d4" }] },
+          after: { cp: 95 },
+        }),
+      ),
+    ).toBe("best");
+  });
+
   it("brilliant: best + sacrifice, not lost after, not already crushing", () => {
     const a = args({
       playedUci: "d3h7",

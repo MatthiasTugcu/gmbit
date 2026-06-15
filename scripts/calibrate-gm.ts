@@ -2,7 +2,7 @@
  * GM-dataset accuracy calibration (segment-aware batch version).
  *
  *   node scripts/calibrate-gm.ts [--workers N] [--depth D] [--fixtures dir]
- *                                [--cache path] [--max-games N]
+ *                                [--cache path] [--max-games N] [--net lite|full]
  *                                [--eval-only] [--fit-only]
  *
  * Like calibrate-batch.ts but for the stratified GM sample: reads
@@ -48,6 +48,15 @@ const maxGames = Number(arg("--max-games", "0"));
 const reportParams = arg("--report-params", "");
 const evalOnly = argv.includes("--eval-only");
 const fitOnly = argv.includes("--fit-only");
+const NET = arg("--net", "lite");
+if (NET !== "lite" && NET !== "full") {
+  console.error(`--net must be "lite" or "full" (got "${NET}")`);
+  process.exit(1);
+}
+const ENGINE_BIN =
+  NET === "full"
+    ? join(ROOT, "node_modules/stockfish/bin/stockfish-18-single.js")
+    : join(ROOT, "public/engine/stockfish-18-lite-single.js");
 
 // Must match classify.ts.
 const APP_K = 0.005;
@@ -137,7 +146,7 @@ interface Searcher {
 }
 
 async function startEngine(): Promise<Searcher> {
-  const child = spawn("node", [join(ROOT, "public/engine/stockfish-18-lite-single.js")], {
+  const child = spawn("node", [ENGINE_BIN], {
     stdio: ["pipe", "pipe", "inherit"],
   });
   const rl = createInterface({ input: child.stdout! });
@@ -204,7 +213,7 @@ function toPositionEval(fen: string, info: AnalysisInfo): PositionEval {
   };
 }
 
-const cacheKey = (fen: string) => `${fen}|d${DEPTH}|mpv${MULTI_PV}`;
+const cacheKey = (fen: string) => `${fen}|d${DEPTH}|mpv${MULTI_PV}${NET === "full" ? "|full" : ""}`;
 
 function loadCache(): Map<string, AnalysisInfo> {
   const cache = new Map<string, AnalysisInfo>();
@@ -226,7 +235,7 @@ async function evaluateAll(): Promise<Map<string, PositionEval>> {
   const uniqueFens = [...new Set(games.flatMap((g) => g.fens))];
   const missing = uniqueFens.filter((f) => !cache.has(cacheKey(f)));
   console.error(
-    `${games.length} games, ${uniqueFens.length} unique positions, ${missing.length} to evaluate (depth ${DEPTH}, ${workerCount} workers)`,
+    `${games.length} games, ${uniqueFens.length} unique positions, ${missing.length} to evaluate (net ${NET}, depth ${DEPTH}, ${workerCount} workers)`,
   );
   if (fitOnly && missing.length > 0) {
     console.error(`--fit-only but ${missing.length} positions missing from cache`);

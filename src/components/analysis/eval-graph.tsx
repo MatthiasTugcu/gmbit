@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Move } from "@/types/analysis";
-import { CLS, GRAPH_MARK } from "@/lib/classification";
+import { CLS, GRAPH_MARK, UNMARKED } from "@/lib/classification";
 import { formatEval, whiteShare } from "@/lib/eval-format";
 
 interface Props {
@@ -201,7 +201,7 @@ function EgTooltip({
     >
       <span className="font-mono font-semibold">{label}</span>
       &nbsp;<span className="tabular-nums text-text-2">{formatEval(e.cp, e.mate)}</span>
-      {m && CLS[m.cls].label !== "Good" && (
+      {m && !UNMARKED.has(m.cls) && (
         <div className="mt-0.5 text-[11px]" style={{ color: `var(--c-${m.cls})` }}>
           {CLS[m.cls].label}
         </div>
