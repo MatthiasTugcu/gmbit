@@ -3,7 +3,7 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { Chessboard, defaultPieces } from "react-chessboard";
 import type { MoveClass, Square } from "@/types/analysis";
-import { CLS } from "@/lib/classification";
+import { CLS, UNMARKED } from "@/lib/classification";
 
 /** Board move-animation duration; the revive overlay clears after the same span. */
 const ANIMATION_MS = 220;
@@ -133,7 +133,7 @@ export function Board({
 
   // Position the classification badge at the top-right of the destination square.
   let badge: { left: number; top: number; sq: number; cls: MoveClass } | null = null;
-  if (highlight && moveClass && (CLS[moveClass].icon || CLS[moveClass].sym)) {
+  if (highlight && moveClass && !UNMARKED.has(moveClass) && (CLS[moveClass].icon || CLS[moveClass].sym)) {
     const p = squarePixel(highlight.to, flip, size);
     const badgeSize = Math.max(18, Math.round(p.sq * 0.36));
     badge = {

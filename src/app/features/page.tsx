@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CLS, CLASS_ORDER } from "@/lib/classification";
+import { CLS, CLASS_ORDER, UNMARKED } from "@/lib/classification";
 import { GmbitLogo } from "@/components/logo";
 import { Wordmark } from "@/components/wordmark";
 import { TryExampleButton } from "./try-example-button";
@@ -39,7 +39,7 @@ export default function FeaturesPage() {
             sacrifice to an outright blunder.
           </p>
           <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {CLASS_ORDER.map((cls) => (
+            {CLASS_ORDER.filter((cls) => !UNMARKED.has(cls)).map((cls) => (
               <li
                 key={cls}
                 className="flex items-center gap-3 rounded-md border border-line bg-bg-1 px-3 py-2"

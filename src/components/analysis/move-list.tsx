@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { Move } from "@/types/analysis";
-import { CLS } from "@/lib/classification";
+import { CLS, UNMARKED } from "@/lib/classification";
 
 interface Props {
   moves: Move[];
@@ -25,9 +25,10 @@ function PlyCell({
 }) {
   if (!m) return <span />;
   const meta = CLS[m.cls];
-  const hasIcon = !!meta.icon;
-  const showBadgeText = !hasIcon && !!meta.short;
-  const showBadgeDot = !hasIcon && !meta.short;
+  const marked = !UNMARKED.has(m.cls);
+  const hasIcon = marked && !!meta.icon;
+  const showBadgeText = marked && !hasIcon && !!meta.short;
+  const showBadgeDot = marked && !hasIcon && !meta.short;
   return (
     <button
       type="button"
