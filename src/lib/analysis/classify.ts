@@ -124,11 +124,15 @@ export interface ClassifyArgs {
   isBook: boolean;
   /** Lazy: only consulted when the move qualifies as best. */
   sacrifice: () => boolean;
+  /** Move lands on the square the opponent just moved to (a forced recapture).
+   * Such moves are "only moves" but never "great". Default false. */
+  recapture?: boolean;
 }
 
-const GREAT_GAP = 12; // win% gap to 2nd line that makes a best move "the only move"
-const GREAT_SWING_GAP = 8; // smaller gap that still counts when a decisive boundary is crossed
-const GREAT_WIN = 75; // win% that counts as "winning" for the secured-win swing
+const GREAT_GAP = 15; // win% the next-best line must trail by (on the calibrated curve)
+const GREAT_WIN = 75; // win% that counts as "winning" for the equal->winning swing
+const GREAT_MIN = 15; // next-best below this means the game's already decided — not great
+const GREAT_MAX = 85; // best above this means we're just converting a win — not great
 const MISS_BEFORE = 75; // win% that counts as a decisive chance
 const MISS_AFTER = 60; // dropping below this throws the chance away
 
@@ -177,8 +181,12 @@ export function classifyMove(a: ClassifyArgs): MoveClass {
   if (a.before.lines.length === 0) return "good"; // degenerate: no engine data
 
   const best = a.before.lines[0];
-  const wBefore = moverWinrate(a.mover, best.score);
-  const wAfter = moverWinrate(a.mover, a.after);
+  // Win% uses the chess.com-calibrated (steep) curve — the same one accuracy
+  // uses — so the loss cutoffs below land on chess.com's published EP-loss
+  // bands (0.02 / 0.05 / 0.10 / 0.20). The gentle lichess curve compressed
+  // real eval swings into tiny losses, so blunders almost never fired.
+  const wBefore = accMoverWinrate(a.mover, best.score);
+  const wAfter = accMoverWinrate(a.mover, a.after);
   const loss = Math.max(0, wBefore - wAfter);
 
   const matchesBest = !!best.uci && best.uci === a.playedUci;
@@ -188,21 +196,20 @@ export function classifyMove(a: ClassifyArgs): MoveClass {
 
   if (matchesBest || asGoodAsBest) {
     if (a.sacrifice() && wAfter >= 30 && wBefore <= 95) return "brilliant";
-    // chess.com V2 "Great": the move was critical to the outcome. Either it was
-    // the only good move (a large gap to the next-best line), or it preserved a
-    // decisive boundary the next-best line would have surrendered — holding at
-    // least equality (best stays >= 50% while the alternative drops below), or
-    // securing the win (best stays winning while the alternative falls back
-    // toward equal). The swing cases still need a clear gap, so a coin-flip
-    // between two near-equal lines isn't "great".
+    // chess.com V2 "Great": a critical, NON-forced find — the only move that
+    // turns a losing line equal (heldEquality) or an equal line winning
+    // (securedWin), in a position that's still genuinely contested. Forced
+    // recaptures and already-decided positions also have a huge gap to the
+    // next-best line, but they are not great however "only" the move is — hence
+    // the recapture exclusion and the contested band.
     const second = a.before.lines[1];
-    if (second) {
-      const wSecond = moverWinrate(a.mover, second.score);
+    if (second && !a.recapture) {
+      const wSecond = accMoverWinrate(a.mover, second.score);
       const gap = wBefore - wSecond;
-      const onlyGoodMove = gap >= GREAT_GAP;
-      const heldEquality = gap >= GREAT_SWING_GAP && wBefore >= 50 && wSecond < 50;
-      const securedWin = gap >= GREAT_SWING_GAP && wBefore >= GREAT_WIN && wSecond < GREAT_WIN;
-      if (onlyGoodMove || heldEquality || securedWin) return "great";
+      const contested = wSecond >= GREAT_MIN && wBefore <= GREAT_MAX;
+      const heldEquality = wBefore >= 50 && wSecond < 50;
+      const securedWin = wBefore >= GREAT_WIN && wSecond < GREAT_WIN;
+      if (contested && gap >= GREAT_GAP && (heldEquality || securedWin)) return "great";
     }
     return "best";
   }
