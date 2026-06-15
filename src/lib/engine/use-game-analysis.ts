@@ -100,13 +100,20 @@ interface Annotated {
 }
 
 /**
- * Re-derive every classification + both accuracies from whatever evals exist.
- * Pure and cheap (n = plies), so it simply reruns whenever evals change.
+ * Re-derive both accuracies and (when `classify` is set) every move
+ * classification from whatever evals exist. Pure and cheap (n = plies), so it
+ * simply reruns whenever evals change.
+ *
+ * `classify` is false during the run so move ratings stay at their neutral
+ * parsed default until analysis finishes — a label is shown only once it rests
+ * on the final (deep-pass) eval, never flipping as depth increases. The live
+ * eval (cp/mate) and accuracy still update progressively either way.
  */
-function annotate(
+export function annotate(
   game: AnalysisGame,
   positions: (PositionEval | undefined)[],
   book: BookInfo,
+  classify: boolean,
 ): Annotated {
   const moves = game.moves.slice();
   const accEntries: MoveAccEntry[] = [];
@@ -120,14 +127,16 @@ function annotate(
     const afterScore: Score = after.lines[0].score;
     const playedUci = m.from + m.to + (m.promo ?? "");
     const isBook = book.isBook[i] ?? false;
-    const cls = classifyMove({
-      mover: m.c,
-      playedUci,
-      before,
-      after: afterScore,
-      isBook,
-      sacrifice: () => isSacrifice(game.fens[i], playedUci),
-    });
+    const cls = classify
+      ? classifyMove({
+          mover: m.c,
+          playedUci,
+          before,
+          after: afterScore,
+          isBook,
+          sacrifice: () => isSacrifice(game.fens[i], playedUci),
+        })
+      : m.cls;
     moves[i] = { ...m, cls, cp: afterScore.cp, mate: afterScore.mate };
 
     const wBefore = accMoverWinrate(m.c, before.lines[0].score);
@@ -237,8 +246,11 @@ export function useGameAnalysis(
         await Promise.all(engines.map((e) => e.ready()));
         const positions: (PositionEval | undefined)[] = new Array(game.fens.length);
 
+        // Progressive updates withhold classifications (classify=false): the
+        // eval bar/graph and accuracy track live, but move ratings wait for the
+        // completed analysis so a label never flips mid-run.
         const apply = () => {
-          const { moves, white, black } = annotate(game, positions, book);
+          const { moves, white, black } = annotate(game, positions, book, false);
           setAnnotated((cur) => ({ ...cur, moves }));
           setAccuracy({ white, black });
         };
@@ -269,10 +281,16 @@ export function useGameAnalysis(
         // Analysis is finished — free the workers without waiting for the
         // next game change or unmount.
         destroyEngines();
+        if (cancelled) return;
+
+        // Now classify (classify=true) and reveal every move rating at once —
+        // each rests on the final deep-pass eval, so nothing flickers.
+        const final = annotate(game, positions, book, true);
+        setAnnotated((cur) => ({ ...cur, moves: final.moves }));
+        setAccuracy({ white: final.white, black: final.black });
 
         // Cache the completed result so re-opening this game skips the engine.
-        if (!cancelled && cacheKey) {
-          const final = annotate(game, positions, book);
+        if (cacheKey) {
           saveAnalysis(window.localStorage, {
             pgn: cacheKey,
             mode,
