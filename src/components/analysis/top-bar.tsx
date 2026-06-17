@@ -12,6 +12,10 @@ interface Props {
   /** PGN of the currently open game, to highlight it in the list. */
   activePgn?: string;
   onSelectGame?: (g: RecentGame) => void;
+  /** Whether move sounds are muted. */
+  muted?: boolean;
+  /** Toggle move-sound mute. When omitted, the speaker control is hidden. */
+  onToggleMute?: () => void;
 }
 
 /**
@@ -19,7 +23,7 @@ interface Props {
  * fixed, so the board never reflows). Collapsed it shows result dots for the
  * player's most recent games; expanded, the clickable game list.
  */
-export function TopBar({ recentGames, activePgn, onSelectGame }: Props) {
+export function TopBar({ recentGames, activePgn, onSelectGame, muted, onToggleMute }: Props) {
   const games = recentGames?.games ?? [];
   return (
     <div className="relative z-30 w-[72px] shrink-0">
@@ -51,6 +55,49 @@ export function TopBar({ recentGames, activePgn, onSelectGame }: Props) {
               ))}
             </ul>
           </div>
+        )}
+
+        {onToggleMute && (
+          <button
+            type="button"
+            onClick={onToggleMute}
+            aria-label={muted ? "Unmute move sounds" : "Mute move sounds"}
+            aria-pressed={muted}
+            title={muted ? "Sound off" : "Sound on"}
+            className="mt-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-text-3 transition-colors hover:bg-bg-2 hover:text-text"
+          >
+            {muted ? (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-[18px] w-[18px]"
+                aria-hidden
+              >
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <line x1="23" y1="9" x2="17" y2="15" />
+                <line x1="17" y1="9" x2="23" y2="15" />
+              </svg>
+            ) : (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-[18px] w-[18px]"
+                aria-hidden
+              >
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+              </svg>
+            )}
+          </button>
         )}
       </div>
     </div>
