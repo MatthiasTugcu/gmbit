@@ -1,7 +1,40 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_POSITION } from "chess.js";
-import { clockToSeconds, gameFromAnnotated, parsePgn, tryMove, uciLineToSan } from "./chess-game";
+import { Chess, DEFAULT_POSITION } from "chess.js";
+import {
+  clockToSeconds,
+  findKingSquare,
+  gameFromAnnotated,
+  parsePgn,
+  pieceCodeAt,
+  tryMove,
+  uciLineToSan,
+} from "./chess-game";
 import type { Move } from "@/types/analysis";
+
+describe("pieceCodeAt", () => {
+  it("returns the react-chessboard code for an occupied square", () => {
+    expect(pieceCodeAt(DEFAULT_POSITION, "e1")).toBe("wK");
+    expect(pieceCodeAt(DEFAULT_POSITION, "d8")).toBe("bQ");
+  });
+
+  it("returns null for an empty square", () => {
+    expect(pieceCodeAt(DEFAULT_POSITION, "e4")).toBeNull();
+  });
+});
+
+describe("findKingSquare", () => {
+  it("locates each king in the starting position", () => {
+    const c = new Chess(DEFAULT_POSITION);
+    expect(findKingSquare(c, "w")).toBe("e1");
+    expect(findKingSquare(c, "b")).toBe("e8");
+  });
+
+  it("returns null when that color has no king on the board", () => {
+    const c = new Chess(DEFAULT_POSITION);
+    c.remove("e8" as never);
+    expect(findKingSquare(c, "b")).toBeNull();
+  });
+});
 
 describe("tryMove", () => {
   it("returns the new position for a legal move", () => {

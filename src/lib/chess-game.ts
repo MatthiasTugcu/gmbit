@@ -1,5 +1,5 @@
 import { Chess, DEFAULT_POSITION } from "chess.js";
-import type { Move, Players } from "@/types/analysis";
+import type { Color, Move, Players, Square } from "@/types/analysis";
 
 /** chess.js v1 throws on illegal moves; normalise that back to null. */
 function moveOrNull(
@@ -135,6 +135,22 @@ export function playersFromHeaders(headers: Record<string, string>): Players {
     result: headers.Result || "*",
     opening: headers.Opening || headers.ECO || "—",
   };
+}
+
+/** react-chessboard piece code (e.g. "bQ") for the piece on `square`, or null. */
+export function pieceCodeAt(fen: string, square: Square): string | null {
+  const p = new Chess(fen).get(square as never);
+  return p ? `${p.color}${p.type.toUpperCase()}` : null;
+}
+
+/** Square the `color` king stands on in the given position, or null if absent. */
+export function findKingSquare(chess: Chess, color: Color): Square | null {
+  for (const row of chess.board()) {
+    for (const cell of row) {
+      if (cell && cell.type === "k" && cell.color === color) return cell.square as Square;
+    }
+  }
+  return null;
 }
 
 /**
