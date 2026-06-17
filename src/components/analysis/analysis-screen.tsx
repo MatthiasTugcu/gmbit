@@ -1,11 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
-import { defaultPieces } from "react-chessboard";
 import type { AnalysisGame } from "@/lib/chess-game";
 import { computeMaterial } from "@/lib/material";
-import { gameFromAnnotated, playersFromHeaders, tryMove } from "@/lib/chess-game";
+import {
+  findKingSquare,
+  gameFromAnnotated,
+  pieceCodeAt,
+  playersFromHeaders,
+  tryMove,
+} from "@/lib/chess-game";
+import { clockAtPly, formatClock, timeControlBaseSeconds } from "@/lib/clock";
+import { moveSound, soundFromSan, type SoundName } from "@/lib/sound/move-sound";
+import { playSound, preloadSounds } from "@/lib/sound/player";
+import { loadMuted, saveMuted } from "@/lib/sound/sound-prefs";
 import type { RecentGame } from "@/lib/chesscom";
 import type { PendingFetch } from "@/lib/pending-game";
 import { loadPly, savePly } from "@/lib/ply-storage";
@@ -21,16 +30,18 @@ import { ClassBar } from "./class-bar";
 import { BestLine } from "./best-line";
 import { MoveList } from "./move-list";
 import { Accuracy } from "./accuracy";
+import { Overview } from "./overview";
 import { Controls } from "./controls";
 import { Board } from "./board";
 import { EvalBar } from "./eval-bar";
 import { EvalGraph } from "./eval-graph";
+import { PlayerStrip } from "./player-strip";
+import { AnalysisProgress } from "./analysis-progress";
+import { LAYOUT, useBoardSize } from "./use-board-size";
+import { useKeyboardNav } from "./use-keyboard-nav";
 
-/** White outline for black captured pieces, so they read on the dark strip and
- * stay distinct where they overlap. Eight directions for a solid ring. */
-const BLACK_PIECE_OUTLINE = ["1px 0", "-1px 0", "0 1px", "0 -1px"]
-  .map((o) => `drop-shadow(${o} 0 #fff)`)
-  .join(" ");
+/** Slight white edge shown before any engine number arrives (≈ +0.12). */
+const OPENING_DEFAULT_CP = 12;
 
 interface Variation {
   baseFen: string; // FEN before the user move (i.e. fens[ply])
@@ -95,6 +106,21 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
   ]);
 
   const [flip, setFlip] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const toggleMuted = useCallback(() => {
+    setMuted((m) => {
+      const next = !m;
+      saveMuted(window.localStorage, next);
+      return next;
+    });
+  }, []);
+  useEffect(() => {
+    const stored = loadMuted(window.localStorage);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot read from localStorage on mount
+    if (stored) setMuted(true);
+    preloadSounds();
+  }, []);
+  const [panelTab, setPanelTab] = useState<"analysis" | "overview">("analysis");
   // Imported games open at the start; only the demo opens mid-game at its
   // showcase position.
   const [ply, setPly] = useState<number>(initialGame ? 0 : Math.min(demoPly, total));
@@ -107,6 +133,27 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
     null,
   );
   const reviveNonce = useRef(0);
+
+  // Play a sound on every position change, both directions, plus variation
+  // moves. Keyed on a position signature (not object identity) so the
+  // background analysis pass — which swaps `analyzedGame` but not the position —
+  // never fires it. The first run (mount) is skipped so the demo/imported game
+  // is silent on load.
+  const soundSigRef = useRef<string | null>(null);
+  useEffect(() => {
+    const sig = variation ? `v${variation.history.length}` : `m${ply}`;
+    const prev = soundSigRef.current;
+    soundSigRef.current = sig;
+    if (prev === null || sig === prev || muted) return;
+    let name: SoundName | null;
+    if (variation) {
+      const last = variation.history.at(-1);
+      name = last ? soundFromSan(last.san) : null;
+    } else {
+      name = ply > 0 ? moveSound(analyzedGame.moves[ply - 1]) : null;
+    }
+    if (name) playSound(name);
+  }, [ply, variation, muted, analyzedGame]);
 
   useEffect(() => {
     // The stored ply is fingerprinted to the game, so a ply saved while
@@ -177,32 +224,31 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
     [variation, analyzedGame, ply],
   );
 
-  // Keyboard nav.
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
-      if (e.key === "ArrowRight") seek(ply + 1);
-      else if (e.key === "ArrowLeft") seek(ply - 1);
-      else if (e.key === "ArrowUp" || e.key === "Home") seek(0);
-      else if (e.key === "ArrowDown" || e.key === "End") seek(total);
-      else if (e.key === "Escape") {
-        setVariation(null);
-        setSelectedSquare(null);
-        return;
-      } else if (e.key === "f" || e.key === "F") {
-        setFlip((f) => !f);
-        return;
-      } else return;
-      // Arrow keys and Home/End must not scroll the page while navigating.
-      e.preventDefault();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [ply, total, seek]);
+  // Keyboard nav: ←/→ step, ↑/Home start, ↓/End end, Esc leaves a variation, F flips.
+  useKeyboardNav({
+    ply,
+    total,
+    onSeek: seek,
+    onFlip: () => setFlip((f) => !f),
+    onEscape: () => {
+      setVariation(null);
+      setSelectedSquare(null);
+    },
+  });
 
   const curMove: Move | null = variation ? null : ply > 0 ? analyzedGame.moves[ply - 1] : null;
   const positionFen = variation ? variation.fen : analyzedGame.fens[ply];
+  // One parsed position shared by every read below (legal moves, board scan,
+  // checkmate/check detection) — parsing a FEN is the priciest op here, so we
+  // do it once per position instead of in each memo. Read-only, so sharing the
+  // instance is safe. null only if the FEN somehow fails to parse.
+  const chess = useMemo(() => {
+    try {
+      return new Chess(positionFen);
+    } catch {
+      return null;
+    }
+  }, [positionFen]);
   // The opening: don't suggest a "best move" (arrow or line) for either side's
   // first move — ply 0 (White to move) and ply 1 (Black to move).
   const atOpening = !variation && ply <= 1;
@@ -231,23 +277,22 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
 
   // Legal-move dots: only when the user has selected a piece.
   const legalTargets = useMemo<{ square: Square; capture: boolean }[]>(() => {
-    if (!selectedSquare) return [];
-    const c = new Chess(positionFen);
-    return c
+    if (!selectedSquare || !chess) return [];
+    return chess
       .moves({ square: selectedSquare as never, verbose: true })
       .map((m) => ({ square: m.to as Square, capture: m.isCapture() || m.isEnPassant() }));
-  }, [selectedSquare, positionFen]);
+  }, [selectedSquare, chess]);
 
   const onSquareClick = useCallback(
     (sq: Square) => {
-      const c = new Chess(positionFen);
+      if (!chess) return;
       // If we already have a selection, try to move there.
       if (selectedSquare) {
         if (sq === selectedSquare) {
           setSelectedSquare(null);
           return;
         }
-        const legal = c
+        const legal = chess
           .moves({ square: selectedSquare as never, verbose: true })
           .some((m) => m.to === sq);
         if (legal) {
@@ -257,10 +302,9 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
         }
       }
       // Otherwise select the piece on `sq` if it belongs to side-to-move.
-      const board = c.board();
-      for (const row of board) {
+      for (const row of chess.board()) {
         for (const cell of row) {
-          if (cell && cell.square === sq && cell.color === c.turn()) {
+          if (cell && cell.square === sq && cell.color === chess.turn()) {
             setSelectedSquare(sq);
             return;
           }
@@ -268,7 +312,7 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
       }
       setSelectedSquare(null);
     },
-    [positionFen, selectedSquare, onPieceDrop],
+    [chess, selectedSquare, onPieceDrop],
   );
 
   // Pause the live eval while the two-pass game analysis runs: the lite
@@ -304,18 +348,12 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
     ? { cp: engineEval.cp, mate: engineEval.mate }
     : curMove
       ? { cp: curMove.cp, mate: curMove.mate }
-      : { cp: 12 };
+      : { cp: OPENING_DEFAULT_CP };
 
   // On a delivered checkmate the engine reports an unsigned `mate 0`, so the
   // eval bar can't tell who won. Resolve it from the position: the side to move
   // is the mated one, so the other side wins (full bar in their colour).
-  const checkmate = useMemo(() => {
-    try {
-      return new Chess(positionFen).isCheckmate();
-    } catch {
-      return false;
-    }
-  }, [positionFen]);
+  const checkmate = chess?.isCheckmate() ?? false;
   const checkmateShare = checkmate
     ? positionFen.split(" ")[1] === "w"
       ? 0 // White to move and mated → Black won (bar fully Black)
@@ -335,71 +373,33 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
       : null;
 
   const checkSquare = useMemo<Square | null>(() => {
+    if (!chess) return null;
+    // `chess` is the current position, so it covers both the variation FEN and
+    // the mainline FEN at this ply. Variations show check whenever the side to
+    // move is in check; the mainline relies on the move's own `check` flag.
     if (variation) {
-      const v = new Chess(variation.fen);
-      if (!v.inCheck()) return null;
-      return findKingSquare(v, v.turn());
+      if (!chess.inCheck()) return null;
+      return findKingSquare(chess, chess.turn());
     }
     if (!curMove || !curMove.check) return null;
-    const c = new Chess(analyzedGame.fens[ply]);
-    return findKingSquare(c, c.turn());
-  }, [variation, curMove, analyzedGame, ply]);
+    return findKingSquare(chess, chess.turn());
+  }, [chess, variation, curMove]);
 
-  // Responsive board/rail sizing — recompute whenever the viewport changes.
-  // Sidebar on the left, rail on the right, graph below the board. Below
-  // WRAP_BREAKPOINT the rail wraps under the board (flex-wrap), so its width
-  // no longer constrains the board.
-  const railWidth = 360;
-  const sidebarWidth = 72;
-  const graphHeight = 110;
-  const evalBarWidth = 28;
-  const boardGap = 12;
-  const wrapBreakpoint = 980;
-  const [boardSize, setBoardSize] = useState(560);
-  const [railHeight, setRailHeight] = useState(620);
-  // Layout effect: measure before paint so the board doesn't visibly jump
-  // from the 560px default on first load.
-  useLayoutEffect(() => {
-    const calc = () => {
-      const wrapped = window.innerWidth < wrapBreakpoint;
-      const h = window.innerHeight - 44 - (graphHeight + 12);
-      const w =
-        window.innerWidth - sidebarWidth - evalBarWidth - (wrapped ? 0 : railWidth + 18) - 52;
-      setBoardSize(Math.max(300, Math.min(h, w, 624)));
-      setRailHeight(Math.max(420, Math.min(window.innerHeight - 44, 760)));
-    };
-    calc();
-    window.addEventListener("resize", calc);
-    return () => window.removeEventListener("resize", calc);
-  }, []);
+  const { boardSize, railHeight } = useBoardSize();
   // Width of the board column: eval bar + gap + board.
-  const boardColumnWidth = boardSize + evalBarWidth + boardGap;
+  const boardColumnWidth = boardSize + LAYOUT.evalBarWidth + LAYOUT.boardGap;
 
   return (
     <div className="app-root relative z-[1] flex h-screen" data-board="violet">
-      <TopBar recentGames={recentGames} activePgn={activePgn} onSelectGame={onSelectGame} />
+      <TopBar
+        recentGames={recentGames}
+        activePgn={activePgn}
+        onSelectGame={onSelectGame}
+        muted={muted}
+        onToggleMute={toggleMuted}
+      />
       <div className="flex min-h-0 flex-1 flex-wrap content-center items-center justify-center gap-[18px] overflow-auto px-[26px] py-[22px]">
         <div className="flex flex-col items-center gap-2">
-          {variation && (
-            <div
-              className="flex items-center gap-3 rounded-md border border-accent-line bg-bg-1 px-3 py-1.5 text-[12.5px] text-text"
-              style={{ width: boardColumnWidth }}
-            >
-              <span className="flex-1">
-                Exploring a <b className="text-accent-bright">variation</b> — not in the game
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  setVariation(null);
-                  setSelectedSquare(null);
-                }}
-                className="h-[26px] rounded-md border border-line-2 bg-bg-2 px-[11px] text-xs font-medium text-text hover:border-accent"
-              >
-                Return to game
-              </button>
-            </div>
-          )}
           <PlayerStrip
             player={flip ? players.white : players.black}
             width={boardColumnWidth}
@@ -413,6 +413,7 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
               mate={checkmate ? 0 : curEval.mate}
               share={checkmateShare}
               height={boardSize}
+              flip={flip}
             />
             <Board
               position={positionFen}
@@ -422,6 +423,7 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
               highlight={lastMove}
               checkSquare={checkSquare}
               moveClass={curMove?.cls ?? null}
+              moveAnalyzed={!!curMove && (curMove.cp !== undefined || curMove.mate !== undefined)}
               selectedSquare={selectedSquare}
               legalTargets={legalTargets}
               bestArrow={atOpening ? null : bestArrow}
@@ -441,15 +443,35 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
             moves={analyzedGame.moves}
             ply={ply}
             width={boardColumnWidth}
-            height={graphHeight}
+            height={LAYOUT.graphHeight}
             onSeek={seek}
           />
         </div>
 
         <div
           className="flex min-h-0 shrink-0 flex-col divide-y divide-line overflow-hidden rounded-md border border-line bg-bg-1"
-          style={{ width: railWidth, height: railHeight }}
+          style={{ width: LAYOUT.railWidth, height: railHeight }}
         >
+          <div className="flex shrink-0">
+            {(["analysis", "overview"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setPanelTab(tab)}
+                className={`flex-1 px-[15px] py-[10px] text-[12px] font-semibold capitalize tracking-[0.02em] transition-colors ${
+                  panelTab === tab
+                    ? "text-text shadow-[inset_0_-2px_0_0_var(--accent)]"
+                    : "text-text-3 hover:text-text-2"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          {panelTab === "overview" ? (
+            <Overview moves={analyzedGame.moves} players={players} />
+          ) : (
+          <>
           <div className="px-[15px] py-[11px]">
             <div className="text-[11px] font-semibold uppercase tracking-[0.09em] text-text-3">
               Opening
@@ -464,13 +486,22 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
                 <div className="font-mono text-[30px] font-semibold leading-none tabular-nums text-text-3">
                   ?
                 </div>
-                <div className="flex min-w-0 flex-col gap-[7px]">
+                <div className="flex min-w-0 flex-col gap-[9px]">
                   <div className="text-[13.5px] font-medium leading-tight">
                     Off the analysed line.
                   </div>
-                  <div className="text-[11px] text-text-3">
-                    Press{" "}
-                    <b className="text-accent-bright">&nbsp;Return to game&nbsp;</b> or Esc
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setVariation(null);
+                        setSelectedSquare(null);
+                      }}
+                      className="h-[26px] rounded-md border border-line-2 bg-bg-2 px-[11px] text-xs font-medium text-text hover:border-accent"
+                    >
+                      Return to game
+                    </button>
+                    <span className="text-[11px] text-text-3">or Esc</span>
                   </div>
                 </div>
               </div>
@@ -502,152 +533,10 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
             onSeek={seek}
             onFlip={() => setFlip((f) => !f)}
           />
+          </>
+          )}
         </div>
       </div>
     </div>
   );
-}
-
-function PlayerStrip({
-  player,
-  width,
-  clock,
-  captured,
-  advantage,
-}: {
-  player: { name: string; rating: number | null; side: "White" | "Black" };
-  width: number;
-  /** Formatted clock for this player at the current ply, when the game has clocks. */
-  clock?: string;
-  /** Piece codes (e.g. "bP") this player has captured, cheapest first. */
-  captured?: string[];
-  /** This player's material lead in points; 0 when not ahead. */
-  advantage?: number;
-}) {
-  const isWhite = player.side === "White";
-  return (
-    <div className="flex items-center gap-2.5 px-1 py-1" style={{ width }}>
-      <span
-        className="h-3 w-3 rounded-full border border-line-2"
-        style={{ background: isWhite ? "oklch(0.95 0.005 288)" : "oklch(0.18 0.02 288)" }}
-        aria-hidden
-      />
-      <div className="min-w-0 max-w-[40%] truncate text-[13px] font-medium text-text">
-        {player.name}
-      </div>
-      {player.rating !== null && (
-        <span className="shrink-0 rounded-[5px] border border-line px-[7px] py-[2px] font-mono text-[11px] text-text-2">
-          {player.rating}
-        </span>
-      )}
-      {captured && captured.length > 0 && (
-        <span className="flex shrink-0 items-center">
-          {captured.map((code, i) => {
-            // Overlap repeats of the same piece (offset enough to still count
-            // them); leave a small gap when the piece type changes.
-            const marginLeft = i === 0 ? 0 : captured[i - 1] === code ? "-10px" : "2px";
-            return (
-              <span key={i} className="h-[15px] w-[15px]" style={{ marginLeft }}>
-                {/* Render at 2x with a 1px outline, then scale to 0.5 so the
-                    outline reads ~0.5px (sub-pixel drop-shadows don't render). */}
-                <span
-                  style={{
-                    display: "block",
-                    width: "30px",
-                    height: "30px",
-                    transform: "scale(0.5)",
-                    transformOrigin: "top left",
-                    filter: code[0] === "b" ? BLACK_PIECE_OUTLINE : undefined,
-                  }}
-                >
-                  {defaultPieces[code]?.({ svgStyle: { width: "100%", height: "100%" } })}
-                </span>
-              </span>
-            );
-          })}
-        </span>
-      )}
-      {advantage !== undefined && advantage > 0 && (
-        <span className="shrink-0 text-[11.5px] font-semibold tabular-nums text-text-2">
-          +{advantage}
-        </span>
-      )}
-      {clock !== undefined && (
-        <span
-          className={`ml-auto shrink-0 rounded-[5px] border px-2 py-[3px] font-mono text-[13px] tabular-nums ${
-            isWhite
-              ? "border-line-2 bg-[oklch(0.95_0.005_288)] text-[oklch(0.18_0.02_288)]"
-              : "border-line-2 bg-[oklch(0.18_0.02_288)] text-[oklch(0.95_0.005_288)]"
-          }`}
-        >
-          {clock}
-        </span>
-      )}
-    </div>
-  );
-}
-
-/** Time-control base (seconds) from a PGN `TimeControl` header, if it has one. */
-function timeControlBaseSeconds(tc: string | undefined): number | undefined {
-  if (!tc || tc === "-" || tc.includes("/")) return undefined;
-  const m = tc.match(/^(\d+)/);
-  return m ? Number(m[1]) : undefined;
-}
-
-/** Clock (seconds) for `color` as of `ply` — the last move that side made by then. */
-function clockAtPly(moves: Move[], ply: number, color: "w" | "b"): number | undefined {
-  for (let i = Math.min(ply, moves.length) - 1; i >= 0; i--) {
-    if (moves[i].c === color && moves[i].clock !== undefined) return moves[i].clock;
-  }
-  return undefined;
-}
-
-/** Format seconds as h:mm:ss (dropping the hour when zero). */
-function formatClock(s: number): string {
-  const sec = Math.max(0, Math.floor(s));
-  const h = Math.floor(sec / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  const ss = String(sec % 60).padStart(2, "0");
-  return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${ss}` : `${m}:${ss}`;
-}
-
-function AnalysisProgress({ done, total }: { done: number; total: number }) {
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-  return (
-    <div className="px-[15px] py-[12px]">
-      <div className="mb-1.5 flex items-baseline justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-text-3">
-          Analysing game
-        </span>
-        <span className="text-[11px] tabular-nums text-text-2">
-          {done} / {total}
-        </span>
-      </div>
-      <div className="h-2.5 overflow-hidden rounded-full bg-bg-3">
-        <div
-          className="h-full rounded-full bg-white transition-[width] duration-200"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-/** react-chessboard piece code (e.g. "bQ") for the piece on `square`, or null. */
-function pieceCodeAt(fen: string, square: Square): string | null {
-  const p = new Chess(fen).get(square as never);
-  return p ? `${p.color}${p.type.toUpperCase()}` : null;
-}
-
-function findKingSquare(chess: Chess, color: "w" | "b"): Square | null {
-  const board = chess.board();
-  for (let r = 0; r < 8; r++) {
-    for (let f = 0; f < 8; f++) {
-      const p = board[r][f];
-      if (p && p.type === "k" && p.color === color) {
-        return p.square as Square;
-      }
-    }
-  }
-  return null;
 }
