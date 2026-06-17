@@ -1,24 +1,18 @@
 import type { Move } from "@/types/analysis";
 
-export type SoundName = "move" | "capture" | "check" | "game-end";
+export type SoundName = "move" | "capture";
 
-/** Sound for a fully-annotated move. Priority: mate > check > capture > move
- * (a capture-with-check plays the check sound, matching chess.com). Castle and
- * non-capture promotions fall through to "move"; capture-promotions are caught
- * by `cap`. Returns null when there is no move (e.g. the start position). */
+/** Every move sounds like wood (matching the rest of the piece moves): a
+ * capture plays the capture wood-click, anything else — quiet move, castle,
+ * promotion, check, or checkmate — plays the move wood-click. Returns null when
+ * there is no move (e.g. the start position). */
 export function moveSound(move: Move | null): SoundName | null {
   if (!move) return null;
-  if (move.mateMove) return "game-end";
-  if (move.check) return "check";
-  if (move.cap) return "capture";
-  return "move";
+  return move.cap ? "capture" : "move";
 }
 
-/** Same categories resolved from a SAN string, for variation moves which carry
- * only their SAN. Same priority order: '#' > '+' > 'x' > quiet. */
+/** Same resolution from a SAN string, for variation moves which carry only
+ * their SAN: a capture ('x') is the capture sound, everything else is move. */
 export function soundFromSan(san: string): SoundName {
-  if (san.includes("#")) return "game-end";
-  if (san.includes("+")) return "check";
-  if (san.includes("x")) return "capture";
-  return "move";
+  return san.includes("x") ? "capture" : "move";
 }
