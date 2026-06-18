@@ -283,12 +283,55 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
       .map((m) => ({ square: m.to as Square, capture: m.isCapture() || m.isEnPassant() }));
   }, [selectedSquare, chess]);
 
+  // Does `sq` hold a piece of the side to move (i.e. is it selectable)?
+  const isOwnPiece = useCallback(
+    (sq: Square) => {
+      if (!chess) return false;
+      for (const row of chess.board()) {
+        for (const cell of row) {
+          if (cell && cell.square === sq) return cell.color === chess.turn();
+        }
+      }
+      return false;
+    },
+    [chess],
+  );
+
+  // A press selects a piece on mousedown (not mouseup), so legal-move dots show
+  // the instant you press — including a press-and-hold before any drag. We then
+  // suppress the deselect that the following click would otherwise do on the
+  // same square, so the selection survives a plain press-release.
+  const selectedOnDown = useRef(false);
+  const onSquareMouseDown = useCallback(
+    (sq: Square) => {
+      // While a piece is selected, a press on a legal target is the start of a
+      // click-to-move — leave it to onSquareClick/onPieceDrop, don't reselect.
+      if (selectedSquare && sq !== selectedSquare && chess) {
+        const legal = chess
+          .moves({ square: selectedSquare as never, verbose: true })
+          .some((m) => m.to === sq);
+        if (legal) return;
+      }
+      if (sq !== selectedSquare && isOwnPiece(sq)) {
+        setSelectedSquare(sq);
+        selectedOnDown.current = true;
+      }
+    },
+    [chess, selectedSquare, isOwnPiece],
+  );
+
   const onSquareClick = useCallback(
     (sq: Square) => {
       if (!chess) return;
       // If we already have a selection, try to move there.
       if (selectedSquare) {
         if (sq === selectedSquare) {
+          // Keep the selection if this click just selected it on mousedown;
+          // otherwise it's a genuine second click → deselect.
+          if (selectedOnDown.current) {
+            selectedOnDown.current = false;
+            return;
+          }
           setSelectedSquare(null);
           return;
         }
@@ -298,21 +341,19 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
         if (legal) {
           onPieceDrop(selectedSquare, sq);
           setSelectedSquare(null);
+          selectedOnDown.current = false;
           return;
         }
       }
       // Otherwise select the piece on `sq` if it belongs to side-to-move.
-      for (const row of chess.board()) {
-        for (const cell of row) {
-          if (cell && cell.square === sq && cell.color === chess.turn()) {
-            setSelectedSquare(sq);
-            return;
-          }
-        }
+      selectedOnDown.current = false;
+      if (isOwnPiece(sq)) {
+        setSelectedSquare(sq);
+        return;
       }
       setSelectedSquare(null);
     },
-    [chess, selectedSquare, onPieceDrop],
+    [chess, selectedSquare, onPieceDrop, isOwnPiece],
   );
 
   // Pause the live eval while the two-pass game analysis runs: the lite
@@ -430,6 +471,7 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
               revive={revive}
               onPieceDrop={onPieceDrop}
               onSquareClick={onSquareClick}
+              onSquareMouseDown={onSquareMouseDown}
             />
           </div>
           <PlayerStrip

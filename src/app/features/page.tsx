@@ -27,7 +27,7 @@ export default function FeaturesPage() {
       <main className="mx-auto w-full max-w-[760px] px-6 py-10">
         <h1 className="text-[32px] font-extrabold tracking-tight text-text">How gmbit works</h1>
         <p className="mt-2 text-[14px] leading-relaxed text-text-2">
-          Paste a PGN or pull your games from chess.com or Lichess. gmbit runs Stockfish
+          Paste a PGN or pull your games from chess.com. gmbit runs Stockfish
           locally in your browser, evaluates every position, and turns the numbers into
           plain-language feedback. Nothing is uploaded — the analysis happens on your machine.
         </p>
@@ -76,6 +76,20 @@ export default function FeaturesPage() {
             (or forced-mate distance). The graph lets you jump straight to the moments where
             the evaluation swung. Choose <b className="text-text">Fast</b> analysis for a quick
             single pass, or <b className="text-text">In-depth</b> for a deeper two-pass review.
+          </p>
+        </section>
+
+        <section className="mt-10">
+          <h2 className="text-[18px] font-bold tracking-tight text-text">The maths behind it</h2>
+          <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-2">
+            Curious how the engine, the win-probability curves, and the accuracy score actually
+            work — and how we calibrated them against chess.com?{" "}
+            <Link
+              href="/methodology"
+              className="text-accent underline decoration-line underline-offset-2 transition-colors hover:decoration-accent"
+            >
+              Read about the algorithm and how we trained it →
+            </Link>
           </p>
         </section>
 

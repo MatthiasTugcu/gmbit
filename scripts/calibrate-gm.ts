@@ -58,9 +58,13 @@ const ENGINE_BIN =
     ? join(ROOT, "node_modules/stockfish/bin/stockfish-18-single.js")
     : join(ROOT, "public/engine/stockfish-18-lite-single.js");
 
-// Must match classify.ts.
-const APP_K = 0.005;
-const APP_FLOOR = 25;
+// Must match classify.ts (accuracy path). NOTE: the curve constants + mean
+// exponent are now fit by scripts/refit-accuracy.ts; this script's k/floor/
+// hopeless/blend sweep predates that and is kept only for its eval cache +
+// drift self-check. APP_K is the accuracy curve (classification uses its own).
+const APP_K = 0.00207;
+const APP_FLOOR = 8.7;
+const APP_MEAN_P = 0.305;
 const APP_HOPELESS = 15;
 const APP_BLEND = 0;
 
@@ -350,7 +354,7 @@ function predictFromGameK(g: GameK, p: Params): { white: number; black: number }
   const perColor = (white: 0 | 1): number => {
     let wNum = 0;
     let wDen = 0;
-    let hDen = 0;
+    let pSum = 0;
     let count = 0;
     for (let i = 0; i < g.acc.length; i++) {
       if (g.isWhite[i] !== white) continue;
@@ -360,13 +364,13 @@ function predictFromGameK(g: GameK, p: Params): { white: number; black: number }
       if (g.wBefore[i] >= ACCURACY_WON && g.wAfter[i] >= ACCURACY_WON_KEEP) continue;
       wNum += g.acc[i] * g.weight[i];
       wDen += g.weight[i];
-      hDen += 1 / Math.max(g.acc[i], p.floor);
+      pSum += Math.pow(Math.max(g.acc[i], p.floor), APP_MEAN_P);
       count++;
     }
     if (count === 0) return 0;
     const weighted = wNum / wDen;
-    const harmonic = count / hDen;
-    return Math.round((p.blend * weighted + (1 - p.blend) * harmonic) * 10) / 10;
+    const power = Math.pow(pSum / count, 1 / APP_MEAN_P);
+    return Math.round((p.blend * weighted + (1 - p.blend) * power) * 10) / 10;
   };
   return { white: perColor(1), black: perColor(0) };
 }

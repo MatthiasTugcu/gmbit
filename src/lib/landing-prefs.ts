@@ -1,5 +1,5 @@
 /** Remembered landing-page input, per fetch source. */
-export type FetchSource = "chesscom" | "lichess";
+export type FetchSource = "chesscom";
 
 const key = (source: FetchSource) => `gmbit.username.${source}`;
 

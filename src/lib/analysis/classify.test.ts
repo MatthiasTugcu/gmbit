@@ -52,10 +52,12 @@ describe("moverScore (total order: mate-for > cp > mate-against)", () => {
 });
 
 describe("moveAccuracy", () => {
-  it("matches the published lichess curve", () => {
+  it("maps win% loss to accuracy on the refit curve", () => {
+    // Steeper than lichess's original: a given win% slip costs more, because
+    // the win% loss feeding it is now read off the gentler accuracy curve.
     expect(moveAccuracy(0)).toBeCloseTo(100, 1);
-    expect(moveAccuracy(10)).toBeCloseTo(63.6, 1);
-    expect(moveAccuracy(20)).toBeCloseTo(40.0, 1);
+    expect(moveAccuracy(10)).toBeCloseTo(25.6, 1);
+    expect(moveAccuracy(20)).toBeCloseTo(5.3, 1);
     expect(moveAccuracy(100)).toBe(0);
   });
   it("clamps negative loss (depth noise) to 100", () => {
@@ -358,17 +360,17 @@ describe("gameAccuracy", () => {
     expect(gameAccuracy(e).white).toBe(80);
   });
 
-  it("harmonic mean drags the score toward blunders more than a plain average", () => {
+  it("the power mean drags the score toward blunders more than a plain average", () => {
     const e = entries([["w", 100], ["w", 100], ["w", 100], ["w", 20]]);
     const { white } = gameAccuracy(e);
-    expect(white).toBeLessThan(80); // plain average
+    expect(white).toBeLessThan(90); // a plain average would be 80
     expect(white).toBeGreaterThan(20);
   });
 
   it("floors blunders so one catastrophe can't crater the game score", () => {
-    // acc 0 and acc 25 games score identically: the harmonic term is floored.
+    // acc 0 and acc 5 games score identically: the per-move term is floored.
     const zero = entries([["w", 100], ["w", 100], ["w", 100], ["w", 0]]);
-    const floored = entries([["w", 100], ["w", 100], ["w", 100], ["w", 25]]);
+    const floored = entries([["w", 100], ["w", 100], ["w", 100], ["w", 5]]);
     expect(gameAccuracy(zero).white).toBe(gameAccuracy(floored).white);
     expect(gameAccuracy(zero).white).toBeGreaterThan(50);
   });

@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Brainstorm visual companion
 .superpowers/
+
+# graphify skill output
+/graphify-out/

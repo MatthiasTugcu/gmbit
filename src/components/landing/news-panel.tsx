@@ -34,8 +34,15 @@ export function NewsPanel() {
   // Stay invisible if the feed is unreachable or empty — never an empty box.
   if (failed || (items && items.length === 0)) return null;
 
+  // Single-row "shelf": small square tiles in one horizontal track you scroll
+  // sideways. snap-x settles the scroll on a card; the fixed card width is
+  // narrower than the row, so the next tile peeks at the edge to advertise that
+  // there's more to the right.
+  const track = "flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2";
+  const card = "w-[150px] shrink-0 snap-start";
+
   return (
-    <div className="w-full rounded-md border border-line bg-bg-1 p-[18px]">
+    <section className="w-full">
       <div className="mb-3 flex items-baseline justify-between">
         <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-text-3">
           Chess news
@@ -44,40 +51,47 @@ export function NewsPanel() {
       </div>
 
       {items === null ? (
-        <ul className="flex flex-col gap-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <li key={i} className="space-y-1.5">
-              <div className="h-3 w-full rounded bg-bg-3" />
-              <div className="h-3 w-2/3 rounded bg-bg-3" />
+        <ul className={track}>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <li key={i} className={card}>
+              <div className="overflow-hidden rounded-lg border border-line bg-bg-1">
+                <div className="aspect-square w-full bg-bg-3" />
+                <div className="space-y-1.5 p-2.5">
+                  <div className="h-2.5 w-full rounded bg-bg-3" />
+                  <div className="h-2.5 w-2/3 rounded bg-bg-3" />
+                </div>
+              </div>
             </li>
           ))}
         </ul>
       ) : (
-        <ul className="flex flex-col divide-y divide-line">
+        <ul className={track}>
           {items.map((item) => (
-            <li key={item.link} className="py-2.5 first:pt-0 last:pb-0">
+            <li key={item.link} className={card}>
               <a
                 href={item.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex gap-2.5"
+                className="group flex h-full flex-col overflow-hidden rounded-lg border border-line bg-bg-1 transition-colors hover:border-accent-line"
               >
-                {item.image && (
+                {item.image ? (
                   // eslint-disable-next-line @next/next/no-img-element -- remote feed thumbnail; next/image would need per-host config
                   <img
                     src={item.image}
                     alt=""
                     loading="lazy"
                     referrerPolicy="no-referrer"
-                    className="h-12 w-12 shrink-0 rounded-[5px] border border-line object-cover"
+                    className="aspect-square w-full object-cover"
                   />
+                ) : (
+                  <div className="aspect-square w-full bg-bg-3" />
                 )}
-                <span className="min-w-0 flex-1">
-                  <span className="line-clamp-2 text-[12.5px] leading-snug text-text transition-colors group-hover:text-accent-bright">
+                <span className="flex flex-1 flex-col gap-1 p-2.5">
+                  <span className="line-clamp-2 text-[12px] font-medium leading-snug text-text transition-colors group-hover:text-accent-bright">
                     {item.title}
                   </span>
                   {item.date > 0 && (
-                    <span className="mt-1 block text-[11px] tabular-nums text-text-3">
+                    <span className="mt-auto pt-1 text-[10.5px] tabular-nums text-text-3">
                       {relativeTime(item.date)}
                     </span>
                   )}
@@ -87,6 +101,6 @@ export function NewsPanel() {
           ))}
         </ul>
       )}
-    </div>
+    </section>
   );
 }

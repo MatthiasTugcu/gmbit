@@ -22,18 +22,23 @@ export function whiteWinrate(s: Score): number {
 }
 
 /**
- * Steeper cp -> win% used ONLY for accuracy. Lichess's k (0.00368) reads
- * +100cp as just 59%, so small errors barely dent accuracy and game scores
- * come out well above chess.com's. Chess.com's win model (like Stockfish's
- * own WDL calibration) is steeper, making the same errors cost more win%.
- * k, the harmonic floor and ACCURACY_HOPELESS were calibrated together
- * against chess.com-reported accuracies: first on 20 fixture games
- * (scripts/calibrate-batch.ts), then re-fit on 410 stratified GM-dataset
- * games and validated out-of-sample on 80 current-model games via
- * scripts/calibrate-gm.ts (pooled MAE 5.04 vs 5.56 for the previous values).
- * Classification keeps the lichess curve its thresholds were tuned on.
+ * cp -> win% steepness. Two values, deliberately decoupled — accuracy and
+ * classification are different concerns that used to share one constant:
+ *
+ *  - ACCURACY_WIN_K drives the accuracy score only. Refit 2026-06-16 against
+ *    chess.com-reported accuracies on 240 current-model games spanning
+ *    1200–1700 (scripts/refit-accuracy.ts, fixtures/combined-current), jointly
+ *    with moveAccuracy's curve and gameAccuracy's power mean. Roughly halved
+ *    pooled MAE (~6.3 -> ~3.5), every rating band, and held cross-validated
+ *    out-of-distribution (params fit on 1500 still cut the 1200 set 5.78 ->
+ *    3.72). Note this is GENTLER than the old shared 0.005 — the per-move
+ *    curve (moveAccuracy) now carries the sensitivity instead.
+ *  - CLASSIFY_WIN_K drives classifyMove's loss-band thresholds, which land on
+ *    chess.com's published EP-loss bands (0.02/0.05/0.10/0.20). Held at the
+ *    earlier 0.005 so the accuracy refit leaves move classifications unchanged.
  */
-const ACCURACY_WIN_K = 0.005;
+const ACCURACY_WIN_K = 0.00207;
+const CLASSIFY_WIN_K = 0.005;
 
 /**
  * Mover win% below which a position counts as lost for accuracy: moves with
@@ -42,8 +47,8 @@ const ACCURACY_WIN_K = 0.005;
  * Without it, near-zero-loss shuffling in a lost position banks
  * perfect-accuracy moves chess.com doesn't credit (and being slowly ground
  * down tanks a score chess.com doesn't tank). The winning side keeps full
- * credit for converting. 15 ≈ -350cp on the accuracy curve; the value is
- * calibrated, see ACCURACY_WIN_K.
+ * credit for converting. 15 ≈ -840cp on the (gentler) accuracy curve; the
+ * value was held fixed through the 2026-06 refit, see ACCURACY_WIN_K.
  */
 export const ACCURACY_HOPELESS = 15;
 
@@ -82,6 +87,15 @@ export function accMoverWinrate(mover: Color, s: Score): number {
 }
 
 /**
+ * Win% on the classification curve (CLASSIFY_WIN_K), keeping classifyMove's
+ * loss-band cutoffs independent of the accuracy refit.
+ */
+function classifyMoverWinrate(mover: Color, s: Score): number {
+  const w = logisticWinrate(s, CLASSIFY_WIN_K);
+  return mover === "w" ? w : 100 - w;
+}
+
+/**
  * Total order over evals from the mover's perspective, for "is this move at
  * least as good as the engine's best" comparisons. Winrate saturates at 0/100
  * and can't distinguish mate-in-2 from mate-in-9; this can.
@@ -95,9 +109,14 @@ export function moverScore(mover: Color, s: Score): number {
   return (s.cp ?? 0) * sign;
 }
 
-/** Published lichess per-move accuracy from win% loss, clamped to [0, 100]. */
+/**
+ * Per-move accuracy from win% loss, clamped to [0, 100]. Curve constants refit
+ * to chess.com 2026-06-16 (see ACCURACY_WIN_K) — steeper than lichess's
+ * original a·e^(-0.0435·loss), so a given win% slip costs more accuracy now
+ * that the win% curve feeding `loss` is gentler.
+ */
 export function moveAccuracy(loss: number): number {
-  const a = 103.1668 * Math.exp(-0.04354 * Math.max(0, loss)) - 3.1669;
+  const a = 104.13 * Math.exp(-0.1329 * Math.max(0, loss)) - 2.01;
   return Math.max(0, Math.min(100, a));
 }
 
@@ -147,16 +166,22 @@ export interface MoveAccEntry {
 const round1 = (x: number) => Math.round(x * 10) / 10;
 
 /**
- * Harmonic floor: per-move accuracies are floored inside the harmonic mean.
- * On the steeper accuracy curve a single huge blunder scores ~0, and an
- * unfloored 1/a term would collapse the harmonic mean to ~n·floor on its
- * own — one move halving the game score, far below how chess.com reads the
- * same game. Calibrated, see ACCURACY_WIN_K.
+ * Per-move accuracies are floored before being averaged, so a single ~0 move
+ * can't drag the game score below how chess.com reads the same game. Refit
+ * down from 25 alongside the power-mean exponent (see ACCURACY_WIN_K).
  */
-const ACCURACY_FLOOR = 25;
+const ACCURACY_FLOOR = 8.7;
 
 /**
- * Game accuracy: floored harmonic mean of per-move accuracies, per color,
+ * Power-mean exponent for aggregating per-move accuracies. p = -1 is the
+ * harmonic mean we used to ship; the 2026-06 refit moved it to ~0.305 (between
+ * geometric and arithmetic) — less bottom-heavy, because the steeper per-move
+ * curve already makes bad moves cost more. Calibrated, see ACCURACY_WIN_K.
+ */
+const ACCURACY_MEAN_P = 0.305;
+
+/**
+ * Game accuracy: floored power mean of per-move accuracies, per color, with
  * excluded moves (book, lost-position shuffling) skipped.
  *
  * Earlier versions blended in lichess's win%-volatility-weighted mean;
@@ -168,9 +193,10 @@ export function gameAccuracy(moves: MoveAccEntry[]): { white: number; black: num
   const perColor = (color: Color): number => {
     const accs = moves.filter((m) => m.color === color && !m.excluded).map((m) => m.acc);
     if (accs.length === 0) return 0;
-    const harmonic =
-      accs.length / accs.reduce((sum, a) => sum + 1 / Math.max(a, ACCURACY_FLOOR), 0);
-    return round1(harmonic);
+    const mean =
+      accs.reduce((sum, a) => sum + Math.pow(Math.max(a, ACCURACY_FLOOR), ACCURACY_MEAN_P), 0) /
+      accs.length;
+    return round1(Math.pow(mean, 1 / ACCURACY_MEAN_P));
   };
 
   return { white: perColor("w"), black: perColor("b") };
@@ -181,12 +207,12 @@ export function classifyMove(a: ClassifyArgs): MoveClass {
   if (a.before.lines.length === 0) return "good"; // degenerate: no engine data
 
   const best = a.before.lines[0];
-  // Win% uses the chess.com-calibrated (steep) curve — the same one accuracy
-  // uses — so the loss cutoffs below land on chess.com's published EP-loss
-  // bands (0.02 / 0.05 / 0.10 / 0.20). The gentle lichess curve compressed
-  // real eval swings into tiny losses, so blunders almost never fired.
-  const wBefore = accMoverWinrate(a.mover, best.score);
-  const wAfter = accMoverWinrate(a.mover, a.after);
+  // Win% uses the classification curve (CLASSIFY_WIN_K) so the loss cutoffs
+  // below land on chess.com's published EP-loss bands (0.02/0.05/0.10/0.20).
+  // This is its own constant, independent of the (gentler) accuracy curve, so
+  // the accuracy refit doesn't disturb move classifications.
+  const wBefore = classifyMoverWinrate(a.mover, best.score);
+  const wAfter = classifyMoverWinrate(a.mover, a.after);
   const loss = Math.max(0, wBefore - wAfter);
 
   const matchesBest = !!best.uci && best.uci === a.playedUci;
@@ -204,7 +230,7 @@ export function classifyMove(a: ClassifyArgs): MoveClass {
     // the recapture exclusion and the contested band.
     const second = a.before.lines[1];
     if (second && !a.recapture) {
-      const wSecond = accMoverWinrate(a.mover, second.score);
+      const wSecond = classifyMoverWinrate(a.mover, second.score);
       const gap = wBefore - wSecond;
       const contested = wSecond >= GREAT_MIN && wBefore <= GREAT_MAX;
       const heldEquality = wBefore >= 50 && wSecond < 50;

@@ -19,9 +19,7 @@ describe("landing-prefs username", () => {
   it("round-trips a username per source", () => {
     const s = memoryStorage();
     saveUsername(s, "chesscom", "hikaru");
-    saveUsername(s, "lichess", "DrNykterstein");
     expect(loadUsername(s, "chesscom")).toBe("hikaru");
-    expect(loadUsername(s, "lichess")).toBe("DrNykterstein");
   });
 
   it("returns empty string when nothing stored", () => {
@@ -33,6 +31,6 @@ describe("landing-prefs username", () => {
     s.setItem = () => {
       throw new Error("quota");
     };
-    expect(() => saveUsername(s, "lichess", "x")).not.toThrow();
+    expect(() => saveUsername(s, "chesscom", "x")).not.toThrow();
   });
 });

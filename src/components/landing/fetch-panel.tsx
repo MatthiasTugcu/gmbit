@@ -14,7 +14,7 @@ const GAME_LIMIT = 100;
 
 interface Props {
   source: FetchSource;
-  /** Human label, e.g. "chess.com" or "Lichess". */
+  /** Human label, e.g. "chess.com". */
   label: string;
   placeholder: string;
   fetchGames: (username: string, limit: number) => Promise<RecentGame[]>;

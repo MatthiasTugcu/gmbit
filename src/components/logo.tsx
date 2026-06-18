@@ -1,7 +1,14 @@
+import {
+  QUEEN_DARK_PATHS,
+  QUEEN_LIGHT_CIRCLES,
+  QUEEN_LIGHT_PATHS,
+} from "./queen-mark";
+
 // The gmbit queen mark — a faceted chess queen in brand magenta. The light
 // plane is --accent-bright, the dark (right/inner) plane is --accent-deep, so
 // the mark tracks the accent hue instead of hardcoding color. Shared by the
-// top bar, landing page, and features page.
+// top bar, landing page, and features page. Geometry lives in queen-mark.ts,
+// shared with the static favicon (src/app/icon.svg).
 export function GmbitLogo({ size = 52 }: { size?: number }) {
   return (
     <svg
@@ -13,20 +20,18 @@ export function GmbitLogo({ size = 52 }: { size?: number }) {
     >
       {/* light plane — the full queen silhouette */}
       <g fill="var(--accent-bright)">
-        <circle cx="14" cy="16" r="3.4" />
-        <circle cx="23" cy="12" r="3.4" />
-        <circle cx="32" cy="10.5" r="3.6" />
-        <circle cx="41" cy="12" r="3.4" />
-        <circle cx="50" cy="16" r="3.4" />
-        <path d="M14,18 L20,33 L23,15 L29,32 L32,13 L35,32 L41,15 L44,33 L50,18 L47,38 Q32,35 17,38 Z" />
-        <path d="M17,40 Q15,48 19,52 L45,52 Q49,48 47,40 Q32,37 17,40 Z" />
-        <path d="M14,54 Q32,51 50,54 Q53,57 50,61 L14,61 Q11,57 14,54 Z" />
+        {QUEEN_LIGHT_CIRCLES.map((c, i) => (
+          <circle key={i} cx={c.cx} cy={c.cy} r={c.r} />
+        ))}
+        {QUEEN_LIGHT_PATHS.map((d, i) => (
+          <path key={i} d={d} />
+        ))}
       </g>
       {/* dark plane — the right/inner facets, giving the crystalline 3D read */}
       <g fill="var(--accent-deep)">
-        <path d="M32,13 L35,32 L47,38 Q40,35.5 32,35 Z" />
-        <path d="M32,37 Q40,37.5 47,40 Q49,48 45,52 L32,52 Z" />
-        <path d="M32,51.5 Q41,51 50,54 Q53,57 50,61 L32,61 Z" />
+        {QUEEN_DARK_PATHS.map((d, i) => (
+          <path key={i} d={d} />
+        ))}
       </g>
     </svg>
   );

@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { Open_Sans, Montserrat, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeToggle } from "@/components/theme-toggle";
+
+// TEMPORARY: apply the saved theme before first paint so toggling persists
+// across pages with no flash of the wrong palette. Remove with ThemeToggle.
+const THEME_INIT = `try{if(localStorage.getItem('gmbit-theme')==='blue')document.documentElement.dataset.theme='blue';}catch(e){}`;
 
 // Friendly humanist sans for the bulk of the UI. Loaded as a variable font so
 // any weight (incl. the heavier body default and bumped utility scale) renders.
@@ -36,7 +41,13 @@ export default function RootLayout({
       lang="en"
       className={`${openSans.variable} ${montserrat.variable} ${geistMono.variable}`}
     >
-      <body>{children}</body>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
+      </head>
+      <body>
+        {children}
+        <ThemeToggle />
+      </body>
     </html>
   );
 }

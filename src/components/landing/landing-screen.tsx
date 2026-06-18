@@ -11,13 +11,12 @@ import { timeControlLabel } from "@/lib/time-control";
 import { TimeControlIcon } from "@/components/landing/time-control-icon";
 import { parsePgn } from "@/lib/chess-game";
 import { fetchRecentGames } from "@/lib/chesscom";
-import { fetchLichessGames } from "@/lib/lichess";
 import { savePendingMeta, savePendingMode, savePendingPgn } from "@/lib/pending-game";
 import { clearHistory, loadHistory, type HistoryEntry, type HistorySource } from "@/lib/history";
 import { loadModePreference, saveModePreference } from "@/lib/mode-preference";
 import type { AnalysisMode } from "@/types/analysis";
 
-type Source = "pgn" | "chesscom" | "lichess";
+type Source = "pgn" | "chesscom";
 
 const SOURCE_LABEL: Record<HistorySource, string> = {
   chesscom: "Chess.com",
@@ -29,6 +28,13 @@ const SOURCE_LABEL: Record<HistorySource, string> = {
 const MODE_LABEL: Record<AnalysisMode, string> = {
   fast: "Fast",
   deep: "In-depth",
+};
+
+// Social links surfaced in the footer. Swap Instagram for the real handle when
+// it's ready (e.g. https://instagram.com/yourhandle).
+const SOCIALS = {
+  github: "https://github.com/MatthiasTugcu/gmbit",
+  instagram: "https://www.instagram.com/matthias_tugcu/",
 };
 
 export function LandingScreen() {
@@ -92,25 +98,33 @@ export function LandingScreen() {
 
   return (
     <div className="app-root relative z-[1] flex h-screen flex-col overflow-y-auto">
-      <div className="flex w-full items-center justify-end px-7 py-4">
+      <div className="flex w-full items-center justify-end gap-5 px-7 py-4">
         <Link
           href="/features"
           className="text-[13px] font-medium text-text-2 transition-colors hover:text-text"
         >
           How it works →
         </Link>
+        <Link
+          href="/methodology"
+          className="rounded-md border border-line px-3 py-1.5 text-[13px] font-medium text-text-2 transition-colors hover:border-accent-line hover:text-text"
+        >
+          Under the hood
+        </Link>
       </div>
       <main className="flex flex-1 flex-col items-center justify-center px-6 py-14">
-        <div className="mx-auto flex w-full max-w-[1320px] items-start justify-center gap-10">
-          {/* Empty left rail mirrors the news rail so the centre column stays centred. */}
-          <div className="hidden w-[300px] shrink-0 xl:block" aria-hidden />
-          <div className="flex w-full max-w-[640px] flex-col items-center">
-          {/* Brand */}
-          <GmbitLogo size={88} />
-          <h1 className="mt-3">
+        <div className="flex w-full max-w-[640px] flex-col items-center">
+          {/* Brand — staggered fade-in on load (logo → wordmark → tagline) */}
+          <span className="brand-logo-enter" style={{ "--enter-delay": "0.05s" } as React.CSSProperties}>
+            <GmbitLogo size={88} />
+          </span>
+          <h1 className="brand-enter mt-3" style={{ "--enter-delay": "0.2s" } as React.CSSProperties}>
             <Wordmark className="text-[40px] font-extrabold tracking-tight" />
           </h1>
-          <p className="mt-1.5 text-center text-[14px] text-text-2">
+          <p
+            className="brand-enter mt-1.5 text-center text-[14px] text-text-2"
+            style={{ "--enter-delay": "0.34s" } as React.CSSProperties}
+          >
             The best game analysis engine - running in your browser.
           </p>
 
@@ -140,7 +154,7 @@ export function LandingScreen() {
           </div>
 
           {/* Source picker */}
-          <div className="mt-3 grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="mt-3 grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
             <SourceCard
               selected={source === "chesscom"}
               onClick={() => setSource("chesscom")}
@@ -156,17 +170,6 @@ export function LandingScreen() {
                 </svg>
               }
               title="Fetch from Chess.com"
-              description="Pull your recent games with just a username."
-            />
-            <SourceCard
-              selected={source === "lichess"}
-              onClick={() => setSource("lichess")}
-              icon={
-                <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-text">
-                  <path d="M12 2l2 5 5 1-4 3 1.5 6L12 14l-4.5 3L9 11 5 8l5-1 2-5z" />
-                </svg>
-              }
-              title="Fetch from Lichess"
               description="Pull your recent games with just a username."
             />
             <SourceCard
@@ -227,17 +230,6 @@ export function LandingScreen() {
               mode={mode}
             />
           )}
-          {source === "lichess" && (
-            <FetchPanel
-              key="lichess"
-              source="lichess"
-              label="Lichess"
-              placeholder="e.g. DrNykterstein"
-              fetchGames={fetchLichessGames}
-              mode={mode}
-            />
-          )}
-
           {history.length > 0 && (
             <div className="mt-8 w-full">
               <div className="mb-2 flex items-center justify-between">
@@ -299,11 +291,15 @@ export function LandingScreen() {
             </div>
           )}
           </div>
-          <aside className="hidden w-[300px] shrink-0 xl:block">
-            <NewsPanel />
-          </aside>
-        </div>
       </main>
+
+      {/* Chess news strip — secondary content below the hero. NewsPanel renders
+          nothing when the feed is empty or unreachable. */}
+      <section className="px-6 pb-12">
+        <div className="mx-auto w-full max-w-[1100px]">
+          <NewsPanel />
+        </div>
+      </section>
 
       <footer className="border-t border-line bg-bg-1/60 px-7 py-5 backdrop-blur-md">
         <div className="mx-auto flex w-full max-w-[1100px] flex-wrap items-center justify-between gap-x-6 gap-y-3">
@@ -315,14 +311,76 @@ export function LandingScreen() {
             </span>
           </div>
           <p className="text-[12px] text-text-3">
-            Analysis runs locally in your browser. Powered by Stockfish.
+            Runs locally in your browser. Powered by Stockfish.
           </p>
-          <p className="text-[12px] text-text-3">
-            © {new Date().getFullYear()} gmbit. All rights reserved.
-          </p>
+          <div className="flex items-center gap-4">
+            <p className="text-[12px] text-text-3">
+              © {new Date().getFullYear()} gmbit. All rights reserved.
+            </p>
+            <SocialLinks />
+          </div>
         </div>
       </footer>
     </div>
+  );
+}
+
+function SocialLinks() {
+  return (
+    <div className="flex items-center gap-0.5">
+      <SocialLink href={SOCIALS.github} label="GitHub">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.8}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="h-[18px] w-[18px]"
+          aria-hidden
+        >
+          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+        </svg>
+      </SocialLink>
+      <SocialLink href={SOCIALS.instagram} label="Instagram">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.8}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="h-[18px] w-[18px]"
+          aria-hidden
+        >
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+        </svg>
+      </SocialLink>
+    </div>
+  );
+}
+
+function SocialLink({
+  href,
+  label,
+  children,
+}: {
+  href: string;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className="flex h-8 w-8 items-center justify-center rounded-md text-text-3 transition-colors hover:bg-bg-3 hover:text-text"
+    >
+      {children}
+    </a>
   );
 }
 
