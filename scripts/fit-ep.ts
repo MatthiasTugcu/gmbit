@@ -18,7 +18,7 @@ import { createReadStream, existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Chess } from "chess.js";
-import { parseInfoLine, type AnalysisInfo } from "../src/lib/engine/index.ts";
+import { type AnalysisInfo } from "../src/lib/engine/index.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const argv = process.argv.slice(2);

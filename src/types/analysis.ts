@@ -34,24 +34,12 @@ export interface Move {
   clock?: number;
 }
 
-export interface Frame {
-  pos: Record<string, Square>;
-  type: Record<string, PieceType>;
-  captured: Set<string>;
-}
-
 export interface Players {
   white: { name: string; rating: number | null; side: "White"; accuracy: number };
   black: { name: string; rating: number | null; side: "Black"; accuracy: number };
   event: string;
   result: string;
   opening: string;
-}
-
-export interface Engine {
-  name: string;
-  kind: string;
-  depth: number;
 }
 
 /** Engine effort selected on the landing page. */

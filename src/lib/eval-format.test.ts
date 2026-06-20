@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assessLabel, formatEval } from "./eval-format";
+import { formatEval } from "./eval-format";
 
 describe("formatEval", () => {
   it("formats centipawns as signed pawns", () => {
@@ -17,12 +17,5 @@ describe("formatEval", () => {
 
   it("formats delivered mate as #", () => {
     expect(formatEval(undefined, 0)).toBe("#");
-  });
-});
-
-describe("assessLabel", () => {
-  it("names the side that has the forced mate", () => {
-    expect(assessLabel(undefined, 4)).toBe("Forced mate for White.");
-    expect(assessLabel(undefined, -4)).toBe("Forced mate for Black.");
   });
 });

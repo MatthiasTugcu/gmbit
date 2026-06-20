@@ -1,4 +1,4 @@
-import type { Move, Players, Engine } from "@/types/analysis";
+import type { Move, Players } from "@/types/analysis";
 
 export const demoMoves: Move[] = [
   { n: 1, c: "w", san: "e4", from: "e2", to: "e4", cls: "book", cp: 20, note: "A principled classical opening." },
@@ -43,7 +43,5 @@ export const demoPlayers: Players = {
   result: "1\u20130",
   opening: "Philidor Defence",
 };
-
-export const demoEngine: Engine = { name: "gmbit Engine 16", kind: "NNUE", depth: 24 };
 
 export const demoPly = 18;

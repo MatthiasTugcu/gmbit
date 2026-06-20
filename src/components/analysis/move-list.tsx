@@ -36,10 +36,9 @@ function PlyCell({
       onClick={() => onSeek(idx + 1)}
       className={`flex cursor-pointer items-center gap-[7px] rounded-md px-2 py-[5px] text-left font-mono text-[13.5px] font-medium text-text transition-colors duration-100 hover:bg-bg-2 ${active ? "bg-accent-soft shadow-[inset_0_0_0_1px_var(--accent-line)]" : ""}`}
     >
-      <span className="tabular-nums">
-        {m.san}
-        {m.check && !m.mateMove ? "+" : ""}
-      </span>
+      {/* `m.san` already carries the check/mate suffix (+/#) from chess.js and
+          the demo data, so it's rendered as-is — no manual suffix. */}
+      <span className="tabular-nums">{m.san}</span>
       {hasIcon && (
         <span
           className="ml-auto grid h-[17px] w-[17px] place-items-center rounded-full text-white shrink-0"
