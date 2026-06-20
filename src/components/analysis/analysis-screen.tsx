@@ -9,6 +9,7 @@ import {
   gameFromAnnotated,
   pieceCodeAt,
   playersFromHeaders,
+  trySan,
   tryMove,
 } from "@/lib/chess-game";
 import { clockAtPly, formatClock, timeControlBaseSeconds } from "@/lib/clock";
@@ -45,8 +46,13 @@ const OPENING_DEFAULT_CP = 12;
 
 interface Variation {
   baseFen: string; // FEN before the user move (i.e. fens[ply])
-  fen: string; // current variation FEN
   history: { from: string; to: string; san: string }[];
+  // Position after each half-move: fens[0] = baseFen, fens[k] = after k moves.
+  // Length is history.length + 1.
+  fens: string[];
+  // Half-move currently shown (1..history.length). Stepping back past 1
+  // returns to the game at the branch ply; the variation is dropped.
+  cursor: number;
 }
 
 interface Props {
@@ -141,13 +147,13 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
   // is silent on load.
   const soundSigRef = useRef<string | null>(null);
   useEffect(() => {
-    const sig = variation ? `v${variation.history.length}` : `m${ply}`;
+    const sig = variation ? `v${variation.cursor}` : `m${ply}`;
     const prev = soundSigRef.current;
     soundSigRef.current = sig;
     if (prev === null || sig === prev || muted) return;
     let name: SoundName | null;
     if (variation) {
-      const last = variation.history.at(-1);
+      const last = variation.history[variation.cursor - 1];
       name = last ? soundFromSan(last.san) : null;
     } else {
       name = ply > 0 ? moveSound(analyzedGame.moves[ply - 1]) : null;
@@ -190,18 +196,61 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
     [total, ply, analyzedGame],
   );
 
-  const onPieceDrop = useCallback(
+  // Step one half-move forward. Inside a variation this walks its own line;
+  // at the variation's tip it stops. On the mainline it advances the game.
+  const stepForward = useCallback(() => {
+    if (variation) {
+      if (variation.cursor < variation.history.length) {
+        setVariation({ ...variation, cursor: variation.cursor + 1 });
+      }
+      return;
+    }
+    seek(ply + 1);
+  }, [variation, ply, seek]);
+
+  // Step one half-move back. Inside a variation this walks its own line; once
+  // it steps past the first variation move it returns to the game at the branch
+  // ply, so further navigation explores the real game again.
+  const stepBack = useCallback(() => {
+    if (variation) {
+      // Stepping back over a capture: repaint the captured piece at once, so it
+      // doesn't blink in after the glide (same trick `seek` uses on the
+      // mainline). The piece to revive is whatever sat on the undone move's
+      // destination square in the earlier position.
+      const undone = variation.history[variation.cursor - 1];
+      const target = variation.fens[variation.cursor - 1];
+      const code = undone ? pieceCodeAt(target, undone.to as Square) : null;
+      if (undone && code) {
+        setRevive({ square: undone.to as Square, piece: code, nonce: ++reviveNonce.current });
+      }
+      if (variation.cursor > 1) {
+        setVariation({ ...variation, cursor: variation.cursor - 1 });
+      } else {
+        setVariation(null);
+        setSelectedSquare(null);
+      }
+      return;
+    }
+    seek(ply - 1);
+  }, [variation, ply, seek]);
+
+  // Apply a real move (source ≠ target): extend the variation or, on the
+  // mainline, advance when it matches the played move else branch into one.
+  const applyMove = useCallback(
     (from: string, to: string): boolean => {
-      // Any successful move changes the position, so drop the selection.
-      setSelectedSquare(null);
-      // If in a variation, try to extend it.
+      // If in a variation, try to extend it from the position currently shown
+      // (the cursor), dropping any moves ahead of it.
       if (variation) {
-        const moved = tryMove(variation.fen, from, to);
+        const moved = tryMove(variation.fens[variation.cursor], from, to);
         if (!moved) return false;
         setVariation({
-          ...variation,
-          fen: moved.fen,
-          history: [...variation.history, { from: moved.from, to: moved.to, san: moved.san }],
+          baseFen: variation.baseFen,
+          history: [
+            ...variation.history.slice(0, variation.cursor),
+            { from: moved.from, to: moved.to, san: moved.san },
+          ],
+          fens: [...variation.fens.slice(0, variation.cursor + 1), moved.fen],
+          cursor: variation.cursor + 1,
         });
         return true;
       }
@@ -216,28 +265,60 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
       if (!moved) return false;
       setVariation({
         baseFen,
-        fen: moved.fen,
         history: [{ from: moved.from, to: moved.to, san: moved.san }],
+        fens: [baseFen, moved.fen],
+        cursor: 1,
       });
       return true;
     },
     [variation, analyzedGame, ply],
   );
 
-  // Keyboard nav: ←/→ step, ↑/Home start, ↓/End end, Esc leaves a variation, F flips.
+  // Latest selection/targets, read inside onPieceDrop's same-square branch
+  // (which is defined before they exist) without re-creating the callback.
+  const selectedSquareRef = useRef(selectedSquare);
+  const legalTargetsRef = useRef<{ square: Square; capture: boolean }[]>([]);
+
+  const onPieceDrop = useCallback(
+    (from: string, to: string): boolean => {
+      // Consume the "press just selected this square" flag for this gesture.
+      const justSelected = selectedOnDown.current;
+      selectedOnDown.current = false;
+      // A same-square "drop" is really a click: the piece is picked up on press
+      // (dragActivationDistance 0), so a plain click registers as a zero-distance
+      // drag and the DOM click that would drive onSquareClick is suppressed. Route
+      // it through click semantics instead of treating it as a (no-op) move.
+      if (from === to) {
+        const sel = selectedSquareRef.current;
+        // Clicked an occupied legal target (a capture) while a piece is selected.
+        if (sel && sel !== from && legalTargetsRef.current.some((t) => t.square === from)) {
+          setSelectedSquare(null);
+          return applyMove(sel, from);
+        }
+        // The press just selected this piece → keep it so the dots stay shown.
+        if (justSelected) return false;
+        // A repeat click on the already-selected piece → deselect.
+        setSelectedSquare(null);
+        return false;
+      }
+      // A real move changes the position, so drop the selection.
+      setSelectedSquare(null);
+      return applyMove(from, to);
+    },
+    [applyMove],
+  );
+
+  // Keyboard nav: ←/→ step, ↑/Home start, ↓/End end, F flips.
   useKeyboardNav({
-    ply,
     total,
     onSeek: seek,
+    onStepBack: stepBack,
+    onStepForward: stepForward,
     onFlip: () => setFlip((f) => !f),
-    onEscape: () => {
-      setVariation(null);
-      setSelectedSquare(null);
-    },
   });
 
   const curMove: Move | null = variation ? null : ply > 0 ? analyzedGame.moves[ply - 1] : null;
-  const positionFen = variation ? variation.fen : analyzedGame.fens[ply];
+  const positionFen = variation ? variation.fens[variation.cursor] : analyzedGame.fens[ply];
   // One parsed position shared by every read below (legal moves, board scan,
   // checkmate/check detection) — parsing a FEN is the priciest op here, so we
   // do it once per position instead of in each memo. Read-only, so sharing the
@@ -283,6 +364,12 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
       .map((m) => ({ square: m.to as Square, capture: m.isCapture() || m.isEnPassant() }));
   }, [selectedSquare, chess]);
 
+  // Mirror selection/targets into refs for onPieceDrop's same-square branch.
+  useEffect(() => {
+    selectedSquareRef.current = selectedSquare;
+    legalTargetsRef.current = legalTargets;
+  });
+
   // Does `sq` hold a piece of the side to move (i.e. is it selectable)?
   const isOwnPiece = useCallback(
     (sq: Square) => {
@@ -314,39 +401,28 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
       }
       if (sq !== selectedSquare && isOwnPiece(sq)) {
         setSelectedSquare(sq);
+        // eslint-disable-next-line react-hooks/immutability -- flag the fresh select so the following same-square drop keeps it
         selectedOnDown.current = true;
       }
     },
     [chess, selectedSquare, isOwnPiece],
   );
 
+  // Clicks land here only when no drag fired — i.e. on empty squares (pieces are
+  // picked up on press and routed through onPieceDrop). So this just handles
+  // click-to-move onto an empty target, or clicking empty space to deselect.
   const onSquareClick = useCallback(
     (sq: Square) => {
       if (!chess) return;
-      // If we already have a selection, try to move there.
-      if (selectedSquare) {
-        if (sq === selectedSquare) {
-          // Keep the selection if this click just selected it on mousedown;
-          // otherwise it's a genuine second click → deselect.
-          if (selectedOnDown.current) {
-            selectedOnDown.current = false;
-            return;
-          }
-          setSelectedSquare(null);
-          return;
-        }
+      if (selectedSquare && sq !== selectedSquare) {
         const legal = chess
           .moves({ square: selectedSquare as never, verbose: true })
           .some((m) => m.to === sq);
         if (legal) {
           onPieceDrop(selectedSquare, sq);
-          setSelectedSquare(null);
-          selectedOnDown.current = false;
           return;
         }
       }
-      // Otherwise select the piece on `sq` if it belongs to side-to-move.
-      selectedOnDown.current = false;
       if (isOwnPiece(sq)) {
         setSelectedSquare(sq);
         return;
@@ -361,6 +437,36 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
   // roughly halve analysis throughput.
   const liveEvalEnabled = !analysisProgress.running;
   const engineEval = useEngineEval(positionFen, 20, liveEvalEnabled);
+
+  // Play the best line up to (and including) the clicked move: build a
+  // variation that walks the engine PV forward from the current position.
+  // `count` is 1-based — clicking the 3rd move plays moves 1–3.
+  const playBestLine = useCallback(
+    (count: number) => {
+      const sans = engineEval.pvSan.slice(0, count);
+      if (sans.length === 0) return;
+      // Branch off whatever's on the board: extend an existing variation from
+      // its cursor (dropping moves ahead), else start one from the mainline
+      // position at the current ply.
+      const baseFen = variation ? variation.baseFen : analyzedGame.fens[ply];
+      const history = variation ? variation.history.slice(0, variation.cursor) : [];
+      const fens = variation
+        ? variation.fens.slice(0, variation.cursor + 1)
+        : [analyzedGame.fens[ply]];
+      let fen = fens[fens.length - 1];
+      for (const san of sans) {
+        const moved = trySan(fen, san);
+        if (!moved) break;
+        fen = moved.fen;
+        history.push({ from: moved.from, to: moved.to, san: moved.san });
+        fens.push(fen);
+      }
+      if (fens.length === 1 || history.length === (variation ? variation.cursor : 0)) return;
+      setSelectedSquare(null);
+      setVariation({ baseFen, history, fens, cursor: fens.length - 1 });
+    },
+    [engineEval.pvSan, variation, analyzedGame, ply],
+  );
 
   // The engine's best move jumps around as the search deepens. Only draw the
   // arrow once it has held steady for a beat, so it stops flickering; clear it
@@ -406,8 +512,8 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
   const stm: "w" | "b" = fenParts[1] === "b" ? "b" : "w";
   const startNumber = Number(fenParts[5]) || 1;
   const lastMove = variation
-    ? variation.history.length > 0
-      ? variation.history[variation.history.length - 1]
+    ? variation.cursor > 0
+      ? variation.history[variation.cursor - 1]
       : null
     : curMove
       ? { from: curMove.from, to: curMove.to }
@@ -469,6 +575,7 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
               legalTargets={legalTargets}
               bestArrow={atOpening ? null : bestArrow}
               revive={revive}
+              dimmed={!!variation}
               onPieceDrop={onPieceDrop}
               onSquareClick={onSquareClick}
               onSquareMouseDown={onSquareMouseDown}
@@ -543,7 +650,6 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
                     >
                       Return to game
                     </button>
-                    <span className="text-[11px] text-text-3">or Esc</span>
                   </div>
                 </div>
               </div>
@@ -557,6 +663,7 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
             sanLine={atOpening ? [] : engineEval.pvSan}
             startNumber={startNumber}
             startColor={stm}
+            onPlay={playBestLine}
             emptyLabel={
               atOpening
                 ? "Best line hidden for the opening moves."
@@ -572,7 +679,11 @@ export function AnalysisScreen({ initialGame, recentGames, activePgn, onSelectGa
           <Controls
             ply={ply}
             total={total}
+            canPrev={variation ? true : ply > 0}
+            canNext={variation ? variation.cursor < variation.history.length : ply < total}
             onSeek={seek}
+            onPrev={stepBack}
+            onNext={stepForward}
             onFlip={() => setFlip((f) => !f)}
           />
           </>

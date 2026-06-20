@@ -9,6 +9,8 @@ interface Props {
   startColor: "w" | "b";
   /** Empty-state label. */
   emptyLabel?: string;
+  /** Play the line up to (and including) the 1-based move index `count`. */
+  onPlay?: (count: number) => void;
 }
 
 export function BestLine({
@@ -16,6 +18,7 @@ export function BestLine({
   startNumber,
   startColor,
   emptyLabel = "End of game.",
+  onPlay,
 }: Props) {
   const pv = sanLine.slice(0, 6);
   return (
@@ -44,10 +47,17 @@ export function BestLine({
             return (
               <Fragment key={i}>
                 {i > 0 && " "}
-                {showNumber && <span className="text-text-3">{numberLabel} </span>}
-                <span className={isFirst ? "font-semibold text-accent-bright" : undefined}>
-                  {san}
-                </span>
+                <button
+                  type="button"
+                  onClick={() => onPlay?.(i + 1)}
+                  title="Play this line"
+                  className="cursor-pointer rounded-[3px] px-[3px] py-[1px] text-left transition-colors hover:bg-bg-2 hover:text-accent-bright"
+                >
+                  {showNumber && <span className="text-text-3">{numberLabel} </span>}
+                  <span className={isFirst ? "font-semibold text-accent-bright" : undefined}>
+                    {san}
+                  </span>
+                </button>
               </Fragment>
             );
           })}

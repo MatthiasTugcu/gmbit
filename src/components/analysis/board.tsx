@@ -33,6 +33,8 @@ interface Props {
    * instead of waiting for react-chessboard's move animation to finish.
    */
   revive?: { square: Square; piece: string; nonce: number } | null;
+  /** Wash the board in translucent white (e.g. while exploring a variation). */
+  dimmed?: boolean;
   onPieceDrop?: (from: string, to: string) => boolean;
   onSquareClick?: (square: Square) => void;
   /** Fired on press (mousedown), so legal-move dots show the instant a piece is
@@ -79,6 +81,7 @@ export function Board({
   legalTargets,
   bestArrow,
   revive,
+  dimmed,
   onPieceDrop,
   onSquareClick,
   onSquareMouseDown,
@@ -94,22 +97,31 @@ export function Board({
     return () => clearTimeout(t);
   }, [revive?.nonce, revive?.square, revive?.piece, revive]);
 
+  // While off the mainline, lighten the board toward white (chess.com-style) by
+  // blending each square colour with white — but only the squares, so the pieces
+  // sitting on top stay at full strength.
+  const wash = (color: string) =>
+    dimmed ? `color-mix(in srgb, ${color}, white 30%)` : color;
+
   const squareStyles: Record<string, CSSProperties> = {};
   if (highlight) {
-    squareStyles[highlight.from] = { background: "var(--hl)" };
-    squareStyles[highlight.to] = { background: "var(--hl2)" };
+    squareStyles[highlight.from] = { background: wash("var(--hl)") };
+    squareStyles[highlight.to] = { background: wash("var(--hl2)") };
   }
   if (selectedSquare) {
     squareStyles[selectedSquare] = {
       ...squareStyles[selectedSquare],
-      background: "var(--hl2)",
+      background: wash("var(--hl2)"),
     };
   }
   if (legalTargets) {
     const dot =
       "radial-gradient(circle at center, var(--dot) 0, var(--dot) 22%, transparent 24%)";
+    // `closest-side` makes 100% reach the square's edge (default is the farther
+    // corner, which pushes the ring outside the square). Kept as a thin band
+    // safely inside that edge.
     const capture =
-      "radial-gradient(circle at center, transparent 58%, var(--dot) 60%, var(--dot) 78%, transparent 80%)";
+      "radial-gradient(circle closest-side at center, transparent 72%, var(--dot) 74%, var(--dot) 86%, transparent 88%)";
     for (const t of legalTargets) {
       // Empty target squares get a centered dot, occupied ones a capture ring
       // (so the piece underneath stays visible). Layer over any existing
@@ -175,8 +187,8 @@ export function Board({
           // ghost piece (default opacity 0.5) left in the source square.
           draggingPieceStyle: { transform: "scale(1.08)" },
           draggingPieceGhostStyle: { opacity: 0 },
-          darkSquareStyle: { backgroundColor: "var(--sq-dark)" },
-          lightSquareStyle: { backgroundColor: "var(--sq-light)" },
+          darkSquareStyle: { backgroundColor: wash("var(--sq-dark)") },
+          lightSquareStyle: { backgroundColor: wash("var(--sq-light)") },
           squareStyles,
           boardStyle: { borderRadius: "var(--r-md)" },
           darkSquareNotationStyle: { color: "var(--coord)", fontSize: 10, fontWeight: 650 },

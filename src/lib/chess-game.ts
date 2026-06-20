@@ -110,6 +110,25 @@ export function tryMove(
 }
 
 /**
+ * Try to make a move from a SAN string (e.g. "Nf3") on a given FEN.
+ * Returns the resulting FEN + the move's squares, or null if it's illegal.
+ */
+export function trySan(
+  fen: string,
+  san: string,
+): { fen: string; san: string; from: string; to: string } | null {
+  const chess = new Chess(fen);
+  let m: ReturnType<Chess["move"]> | null;
+  try {
+    m = chess.move(san);
+  } catch {
+    return null;
+  }
+  if (!m) return null;
+  return { fen: chess.fen(), san: m.san, from: m.from, to: m.to };
+}
+
+/**
  * Build a Players object from PGN headers, with sensible fallbacks.
  */
 export function playersFromHeaders(headers: Record<string, string>): Players {

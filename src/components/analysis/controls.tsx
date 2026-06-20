@@ -5,14 +5,21 @@ import { Icons } from "./icons";
 interface Props {
   ply: number;
   total: number;
+  /** Whether stepping back/forward is possible (variation-aware). */
+  canPrev: boolean;
+  canNext: boolean;
+  /** Jump to an absolute ply (First/Last); always on the mainline. */
   onSeek: (p: number) => void;
+  /** Step one half-move back/forward — variation-aware. */
+  onPrev: () => void;
+  onNext: () => void;
   onFlip: () => void;
 }
 
 const buttonBase =
   "grid place-items-center rounded-md border border-line-2 bg-bg-2 text-text transition-colors duration-150 hover:border-accent hover:text-accent-bright disabled:opacity-35 disabled:cursor-default disabled:border-line disabled:text-text-3 disabled:hover:border-line disabled:hover:text-text-3 [&_svg]:h-[17px] [&_svg]:w-[17px]";
 
-export function Controls({ ply, total, onSeek, onFlip }: Props) {
+export function Controls({ ply, total, canPrev, canNext, onSeek, onPrev, onNext, onFlip }: Props) {
   return (
     <div className="flex items-center gap-2 px-[14px] py-3">
       <button
@@ -27,8 +34,8 @@ export function Controls({ ply, total, onSeek, onFlip }: Props) {
       <button
         type="button"
         className={`${buttonBase} h-[42px] flex-1`}
-        disabled={ply === 0}
-        onClick={() => onSeek(ply - 1)}
+        disabled={!canPrev}
+        onClick={onPrev}
         title="Previous"
       >
         {Icons.prev}
@@ -36,8 +43,8 @@ export function Controls({ ply, total, onSeek, onFlip }: Props) {
       <button
         type="button"
         className={`${buttonBase} h-[42px] flex-1`}
-        disabled={ply === total}
-        onClick={() => onSeek(ply + 1)}
+        disabled={!canNext}
+        onClick={onNext}
         title="Next"
       >
         {Icons.next}
