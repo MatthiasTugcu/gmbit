@@ -57,13 +57,9 @@ function PlyCell({
             color: meta.ink ?? "white",
           }}
         >
-          <span className="inline-flex">
-            {[...meta.short].map((c, i) => (
-              <span key={i} style={i > 0 ? { marginLeft: "-0.15em" } : undefined}>
-                {c}
-              </span>
-            ))}
-          </span>
+          {/* Render the symbol as a plain string so multi-glyph marks (!!, ?!,
+              ??) keep their natural letter spacing — matching the board badge. */}
+          {meta.short}
         </span>
       )}
       {showBadgeDot && (

@@ -77,7 +77,7 @@ export function EvalGraph({ moves, ply, width, height, onSeek }: Props) {
           Eval
         </span>
         <span className="text-[11px] tabular-nums text-text-3">
-          {formatEval(curEval.cp, curEval.mate)}
+          {formatEval(curEval.cp, curEval.mate).replace(/^[+−]/, "")}
         </span>
       </div>
       <svg
@@ -200,7 +200,7 @@ function EgTooltip({
       style={{ left, top }}
     >
       <span className="font-mono font-semibold">{label}</span>
-      &nbsp;<span className="tabular-nums text-text-2">{formatEval(e.cp, e.mate)}</span>
+      &nbsp;<span className="tabular-nums text-text-2">{formatEval(e.cp, e.mate).replace(/^[+−]/, "")}</span>
       {m && !UNMARKED.has(m.cls) && (
         <div className="mt-0.5 text-[11px]" style={{ color: `var(--c-${m.cls})` }}>
           {CLS[m.cls].label}

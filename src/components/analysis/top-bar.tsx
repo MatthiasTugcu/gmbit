@@ -35,12 +35,15 @@ export function TopBar({ recentGames, activePgn, onSelectGame, muted, onToggleMu
 
         {games.length > 0 && (
           <div className="relative min-h-0 flex-1 self-stretch">
-            <div className="absolute inset-y-0 left-0 flex w-[56px] flex-col items-center gap-[7px] pt-1 transition-opacity duration-150 group-hover:pointer-events-none group-hover:opacity-0">
+            <div className="absolute inset-y-0 left-0 flex w-[56px] flex-col items-center gap-[5px] overflow-hidden pt-1 transition-opacity duration-150 group-hover:pointer-events-none group-hover:opacity-0">
               {games.map((g, i) => (
                 <span
                   key={`${g.endTime}-${i}`}
-                  className={`h-[7px] w-[7px] shrink-0 rounded-full ${DOT_COLOR[g.outcome]}`}
-                />
+                  title={`${OUTCOME_LABEL[g.outcome]} as ${g.userSide}`}
+                  className={`grid h-[15px] w-[15px] shrink-0 place-items-center rounded-[3px] border border-line-2 text-[9px] font-bold leading-none ${SIDE_SQUARE[g.userSide]}`}
+                >
+                  {OUTCOME_LETTER[g.outcome]}
+                </span>
               ))}
             </div>
 
@@ -108,6 +111,25 @@ const DOT_COLOR: Record<RecentGame["outcome"], string> = {
   won: "bg-emerald-400",
   lost: "bg-red-400",
   draw: "bg-[oklch(0.55_0.01_288)]",
+};
+
+/** Collapsed-rail badge: the letter is the result, the square colour is the side
+ * the user played (white square = played White, black square = played Black). */
+const OUTCOME_LETTER: Record<RecentGame["outcome"], string> = {
+  won: "W",
+  lost: "L",
+  draw: "D",
+};
+
+const OUTCOME_LABEL: Record<RecentGame["outcome"], string> = {
+  won: "Won",
+  lost: "Lost",
+  draw: "Draw",
+};
+
+const SIDE_SQUARE: Record<RecentGame["userSide"], string> = {
+  white: "bg-[oklch(0.95_0.005_288)] text-[oklch(0.18_0.02_288)]",
+  black: "bg-[oklch(0.18_0.02_288)] text-[oklch(0.95_0.005_288)]",
 };
 
 function GameRow({
