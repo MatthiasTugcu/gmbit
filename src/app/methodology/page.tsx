@@ -67,13 +67,15 @@ export default function MethodologyPage() {
             already winning or lost.
           </p>
           <p className="mt-3 text-[13.5px] leading-relaxed text-text-2">
-            We actually use <b className="text-text">two</b> versions of that curve. A gentle one
-            (the well-known Lichess fit) feeds the move classifications, whose thresholds were
-            tuned against it. A <b className="text-text">steeper</b> one drives the accuracy score
-            — the gentle curve reads being a pawn up as only ~59%, so small errors barely dented
-            accuracy and games scored well above what other sites reported. The steeper curve
-            makes the same mistakes cost more, matching how chess.com&apos;s win model behaves.
-            That steepness is one of the constants we calibrated (below).
+            We actually use <b className="text-text">two</b> versions of that curve, deliberately
+            kept apart — grading a move and scoring accuracy are different jobs that used to share
+            one constant. The move classifications run on the <b className="text-text">steeper</b>{" "}
+            curve, whose thresholds line up with chess.com&apos;s expected-points bands. The
+            accuracy score reads win% off a separate, <b className="text-text">gentler</b> curve
+            (a shade gentler even than the well-known Lichess fit) and then leans on a steep
+            per-move mapping to decide what each slip costs. Pulling the two apart is what let us
+            recalibrate accuracy in mid-2026 without moving a single move label — and both are
+            constants we fit against real data (below).
           </p>
         </section>
 
@@ -108,11 +110,15 @@ export default function MethodologyPage() {
           </h2>
           <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-2">
             Each move gets a 0–100 accuracy from its win-probability loss, and a game&apos;s
-            accuracy is the <b className="text-text">harmonic mean</b> of those — not the plain
-            average. The harmonic mean is dominated by the worst entries, which is exactly right
-            for chess: one game-losing blunder <i>should</i> weigh more than a dozen routine
-            moves. To stop a single near-zero move from collapsing the whole score below what a
-            human reviewer would give, per-move accuracies are floored before being averaged.
+            accuracy is a <b className="text-text">power mean</b> of those — a generalised average
+            tuned to sit between the geometric and arithmetic mean (the shipped exponent is about{" "}
+            <span className="font-mono text-text">0.305</span>). Like the harmonic mean we used to
+            ship, it leans toward your worst moves — one game-losing blunder <i>should</i> weigh
+            more than a dozen routine ones — but calibration found a milder exponent tracks
+            chess.com better, because the per-move curve already makes bad moves bite. To stop a
+            single near-zero move from collapsing the whole score below what a human reviewer would
+            give, per-move accuracies are floored (around <span className="font-mono text-text">9</span>)
+            before they&apos;re combined.
           </p>
           <p className="mt-3 text-[13.5px] leading-relaxed text-text-2">
             Two classes of move are excluded entirely. <b className="text-text">Book moves</b>{" "}
@@ -144,42 +150,46 @@ export default function MethodologyPage() {
               MAE
             </a>
             ) — the average gap, in accuracy points, between gmbit&apos;s number and chess.com&apos;s
-            across hundreds of games. An MAE of 5 means we land, on average, within 5 points of
-            chess.com&apos;s figure.
+            across hundreds of games. An MAE of 3.5 means we land, on average, within about 3–4
+            points of chess.com&apos;s figure.
           </p>
           <p className="mt-3 text-[13.5px] leading-relaxed text-text-2">
-            We fit in stages: first on a 20-game seed set, then re-fit on{" "}
-            <b className="text-text">410 stratified games</b> spanning a wide rating range, and
-            finally validated <i>out of sample</i> on <b className="text-text">80 fresh games</b>{" "}
-            the fit had never seen. That last step is the important one — it&apos;s easy to tune
-            a model that fits the data it was trained on and falls apart on new games. The
-            calibrated constants brought pooled MAE down to <b className="text-text">5.04</b>{" "}
-            (from 5.56 for the previous values) and held up on the held-out set.
+            The current numbers come from a <b className="text-text">mid-2026 refit</b>: six
+            constants — the two curves, the power-mean exponent and its floor — fit{" "}
+            <i>jointly</i> against chess.com&apos;s reported accuracy on{" "}
+            <b className="text-text">240 of our own analysed games</b> spanning roughly{" "}
+            <b className="text-text">1200–1700</b>. We minimise pooled MAE on a stratified ~75%
+            training split and check the held-out quarter the fit never saw. The refit roughly{" "}
+            <b className="text-text">halved pooled MAE — from ~6.3 to ~3.5</b> — and improved every
+            rating band. It also held up <i>out of distribution</i>: constants fit only on
+            ~1500-rated games still cut the error on the 1200 set from{" "}
+            <b className="text-text">5.78 to 3.72</b>, a sign we fit the model and not the noise.
+            The fit is validated up to ~1700; we haven&apos;t yet checked higher.
           </p>
           <div className="mt-4 overflow-hidden rounded-md border border-line bg-bg-1">
             <table className="w-full text-[13px]">
               <thead>
                 <tr className="border-b border-line text-left text-text-2">
-                  <th className="px-3 py-2 font-semibold">Stage</th>
+                  <th className="px-3 py-2 font-semibold">Split</th>
                   <th className="px-3 py-2 font-semibold">Games</th>
                   <th className="px-3 py-2 font-semibold">Purpose</th>
                 </tr>
               </thead>
               <tbody className="text-text-2">
                 <tr className="border-b border-line">
-                  <td className="px-3 py-2 text-text">Seed fit</td>
-                  <td className="px-3 py-2">20</td>
-                  <td className="px-3 py-2">First pass on the curve + thresholds</td>
+                  <td className="px-3 py-2 text-text">Train</td>
+                  <td className="px-3 py-2">~180</td>
+                  <td className="px-3 py-2">Stratified ~75% — joint fit of the curves + power mean</td>
                 </tr>
                 <tr className="border-b border-line">
-                  <td className="px-3 py-2 text-text">Re-fit</td>
-                  <td className="px-3 py-2">410</td>
-                  <td className="px-3 py-2">Stratified across ratings, final constants</td>
+                  <td className="px-3 py-2 text-text">Holdout</td>
+                  <td className="px-3 py-2">~60</td>
+                  <td className="px-3 py-2">Held-out quarter — overfitting check</td>
                 </tr>
                 <tr>
-                  <td className="px-3 py-2 text-text">Validation</td>
-                  <td className="px-3 py-2">80</td>
-                  <td className="px-3 py-2">Out-of-sample check — MAE 5.04</td>
+                  <td className="px-3 py-2 text-text">Cross-band</td>
+                  <td className="px-3 py-2">—</td>
+                  <td className="px-3 py-2">Fit on ~1500 only, applied to 1200 (5.78 → 3.72)</td>
                 </tr>
               </tbody>
             </table>
@@ -204,9 +214,10 @@ export default function MethodologyPage() {
             refutations and judges more moves as losing — which pushes computed accuracy{" "}
             <i>down and away</i> from chess.com&apos;s labels. Chess.com&apos;s accuracy model is
             tuned around a bounded engine, so a <i>harsher</i> engine isn&apos;t a closer one. The
-            residual ~5-point error isn&apos;t an engine-strength gap we can close by searching
-            harder; it&apos;s model-mismatch noise between two reasonable definitions of
-            &ldquo;accuracy.&rdquo; That single experiment took deeper search and bigger nets off
+            residual error — now ~3.5 points after the recalibration — isn&apos;t an
+            engine-strength gap we can close by searching harder; it&apos;s model-mismatch noise
+            between two reasonable definitions of &ldquo;accuracy.&rdquo; That single experiment
+            took deeper search and bigger nets off
             our roadmap and kept gmbit fast and light — which, running in your browser, matters
             more anyway.
           </p>
