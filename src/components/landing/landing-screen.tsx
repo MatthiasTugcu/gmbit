@@ -7,6 +7,7 @@ import { Wordmark } from "@/components/wordmark";
 import { FetchPanel } from "@/components/landing/fetch-panel";
 import { SideSquare } from "@/components/landing/side-square";
 import { NewsPanel } from "@/components/landing/news-panel";
+import { FEATURES, FeatureColumn } from "@/components/landing/feature-rail";
 import { timeControlLabel } from "@/lib/time-control";
 import { TimeControlIcon } from "@/components/landing/time-control-icon";
 import { parsePgn } from "@/lib/chess-game";
@@ -112,7 +113,19 @@ export function LandingScreen() {
           Under the hood
         </Link>
       </div>
-      <main className="flex flex-1 flex-col items-center justify-center px-6 py-14">
+      <main className="relative flex flex-1 flex-col items-center justify-center px-6 py-14">
+        {/* "Why gmbit" feature tiles, split symmetrically across both flanks —
+            anchored to a centered max-width group (not the viewport edges) so on
+            wide screens they sit near the hero instead of hugging the sides.
+            Only on wide screens; the centered hero is untouched below xl. */}
+        <div className="pointer-events-none absolute inset-0 mx-auto hidden max-w-[1264px] xl:block">
+          <aside className="rise-in pointer-events-auto absolute left-0 top-1/2 w-[280px] -translate-y-1/2">
+            <FeatureColumn tiles={FEATURES.slice(0, 2)} />
+          </aside>
+          <aside className="rise-in pointer-events-auto absolute right-0 top-1/2 w-[280px] -translate-y-1/2">
+            <FeatureColumn tiles={FEATURES.slice(2)} />
+          </aside>
+        </div>
         <div className="flex w-full max-w-[640px] flex-col items-center">
           {/* Brand — staggered fade-in on load (logo → wordmark → tagline) */}
           <span className="brand-logo-enter" style={{ "--enter-delay": "0.05s" } as React.CSSProperties}>
